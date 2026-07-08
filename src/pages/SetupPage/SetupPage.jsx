@@ -1,9 +1,11 @@
-import { Badge, Button } from "../components/Ui";
-import { getMode, getTrack, levels, modes, tracks } from "../data/mockData";
+import { Badge, Button } from "../../components/Ui";
+import { getMode, getTrainingQuests, getTrack, levels, modes, tracks } from "../../data/mockData";
+import "./SetupPage.css";
 
-function SetupPage({ settings, questions, onUpdateSetting, onStart, onLoadDemo }) {
+function SetupPage({ settings, questions, playerProfile, onUpdateSetting, onStart, onLoadDemo }) {
   const selectedTrack = getTrack(settings.track);
   const selectedMode = getMode(settings.mode);
+  const trainingQuests = getTrainingQuests(playerProfile);
 
   return (
     <section className="page setup-page">
@@ -88,6 +90,20 @@ function SetupPage({ settings, questions, onUpdateSetting, onStart, onLoadDemo }
               </li>
             ))}
           </ol>
+
+          {playerProfile ? (
+            <div className="setup-quest-panel">
+              <strong>{playerProfile.name}'s quest board</strong>
+              <div className="setup-quest-list">
+                {trainingQuests.slice(0, 3).map((quest) => (
+                  <div className="setup-quest-item" key={quest.id}>
+                    <span>{quest.title}</span>
+                    <small>+{quest.xp} XP</small>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </aside>
       </div>
     </section>

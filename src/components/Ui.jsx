@@ -1,3 +1,5 @@
+import "./Ui.css";
+
 export function Button({ children, variant = "primary", className = "", ...props }) {
   return (
     <button className={`button ${variant} ${className}`.trim()} type="button" {...props}>

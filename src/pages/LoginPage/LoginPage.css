@@ -1,0 +1,78 @@
+.login-layout {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 520px) minmax(280px, 1fr);
+  align-items: stretch;
+  margin: 34px auto 0;
+  max-width: 1040px;
+}
+
+.login-form {
+  display: grid;
+  gap: 18px;
+}
+
+.login-form h1 {
+  font-size: clamp(34px, 5vw, 54px);
+  line-height: 1.05;
+}
+
+.login-form label {
+  display: grid;
+  gap: 8px;
+  font-weight: 800;
+}
+
+.login-form label > span {
+  color: #3d4451;
+}
+
+.login-side {
+  display: grid;
+  align-content: center;
+  gap: 18px;
+}
+
+.login-side h2 {
+  max-width: 520px;
+  font-size: clamp(28px, 4vw, 46px);
+  line-height: 1.08;
+}
+
+.login-step-list {
+  display: grid;
+  gap: 10px;
+}
+
+.login-step-list > div {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #f8fafc;
+  padding: 12px;
+}
+
+.login-step-list strong {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: var(--radius);
+  background: var(--primary);
+  color: white;
+}
+
+.login-step-list span {
+  color: #3d4451;
+  font-weight: 800;
+}
+
+@media (max-width: 840px) {
+  .login-layout {
+    grid-template-columns: 1fr;
+    margin-top: 18px;
+  }
+}

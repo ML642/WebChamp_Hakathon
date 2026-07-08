@@ -1,0 +1,257 @@
+.hero-grid {
+  display: grid;
+  gap: 22px;
+  grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr);
+  align-items: stretch;
+}
+
+.hero-copy {
+  min-height: 520px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hero-product {
+  min-height: 520px;
+  border-radius: var(--radius);
+  background: var(--panel-strong);
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 28px;
+}
+
+.mock-call {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.08);
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr 210px;
+  padding: 14px;
+}
+
+.mock-call-main,
+.mock-call-side {
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.11);
+  padding: 18px;
+}
+
+.mock-call-main {
+  min-height: 310px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.mock-call-main p,
+.mock-call-side span {
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.mock-call-side {
+  display: grid;
+  gap: 10px;
+}
+
+.mock-call-side span {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+
+.record-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: #ff4962;
+  box-shadow: 0 0 0 8px rgba(255, 73, 98, 0.2);
+  margin-bottom: auto;
+}
+
+.pitch-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 22px;
+}
+
+.question-base-panel {
+  margin-top: 22px;
+}
+
+.question-base-header {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+}
+
+.question-base-header h2 {
+  margin-top: 12px;
+  font-size: 32px;
+}
+
+.question-base-header p {
+  max-width: 760px;
+}
+
+.question-base-stats {
+  min-width: 150px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #f8fafc;
+  padding: 16px;
+  text-align: center;
+}
+
+.question-base-stats strong,
+.question-base-stats span {
+  display: block;
+}
+
+.question-base-stats strong {
+  font-size: 38px;
+}
+
+.question-base-stats span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.question-base-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.filter-chip {
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #f8fafc;
+  color: #3d4451;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 900;
+  padding: 0 12px;
+}
+
+.filter-chip span {
+  display: inline-grid;
+  min-width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: var(--radius);
+  background: white;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.filter-chip.active {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: white;
+}
+
+.filter-chip.active span {
+  color: var(--primary);
+}
+
+.question-base-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 18px;
+}
+
+.question-preview {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #f8fafc;
+  min-height: 224px;
+  padding: 16px;
+}
+
+.question-preview h3 {
+  margin: 14px 0 8px;
+  font-size: 18px;
+}
+
+.question-preview p {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.question-preview small {
+  color: #3d4451;
+  display: block;
+  font-weight: 900;
+  margin-top: 12px;
+}
+
+.question-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.question-meta > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.roadmap-panel {
+  margin-top: 22px;
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 0.8fr 1.2fr;
+}
+
+.roadmap-list {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--muted);
+  line-height: 1.85;
+}
+
+@media (max-width: 1060px) {
+  .hero-grid,
+  .roadmap-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .pitch-grid,
+  .question-base-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .hero-copy,
+  .hero-product {
+    min-height: auto;
+  }
+
+  .hero-product {
+    padding: 14px;
+  }
+
+  .mock-call,
+  .pitch-grid,
+  .question-base-header,
+  .question-base-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,147 @@
+.registration-layout {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 680px) minmax(280px, 1fr);
+  align-items: start;
+  margin: 34px auto 0;
+  max-width: 1100px;
+}
+
+.registration-form {
+  display: grid;
+  gap: 18px;
+}
+
+.registration-heading {
+  display: grid;
+  gap: 12px;
+}
+
+.registration-heading h1 {
+  font-size: clamp(34px, 5vw, 54px);
+  line-height: 1.05;
+  margin: 0;
+}
+
+.registration-heading p,
+.registration-summary p {
+  color: var(--muted);
+  line-height: 1.65;
+  margin: 0;
+}
+
+.registration-group {
+  display: grid;
+  gap: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #f8fafc;
+  padding: 16px;
+}
+
+.registration-group-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.registration-group-heading span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.registration-group-heading h2 {
+  margin: 0;
+}
+
+.form-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.registration-form label {
+  display: grid;
+  gap: 8px;
+  font-weight: 800;
+}
+
+.registration-form label > span {
+  color: #3d4451;
+}
+
+select {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: white;
+  color: var(--text);
+  outline: none;
+  padding: 0 12px;
+}
+
+select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(17, 19, 24, 0.08);
+}
+
+.registration-summary {
+  position: sticky;
+  top: 92px;
+  display: grid;
+  gap: 18px;
+}
+
+.registration-summary h2 {
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.08;
+  margin: 0;
+}
+
+.summary-list {
+  display: grid;
+  gap: 10px;
+}
+
+.summary-list > div {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #f8fafc;
+  padding: 12px;
+}
+
+.summary-list span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.summary-list strong {
+  display: block;
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 920px) {
+  .registration-layout {
+    grid-template-columns: 1fr;
+    margin-top: 18px;
+  }
+
+  .registration-summary {
+    position: static;
+  }
+}
+
+@media (max-width: 720px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}

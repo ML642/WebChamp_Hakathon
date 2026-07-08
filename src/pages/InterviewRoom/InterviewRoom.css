@@ -1,0 +1,125 @@
+.interview-header {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
+.timer-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(120px, 1fr));
+}
+
+.interview-layout {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1.35fr) minmax(340px, 0.65fr);
+  margin-top: 18px;
+}
+
+.camera-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.mock-camera {
+  position: relative;
+  min-height: 430px;
+  border-radius: var(--radius);
+  background: #111318;
+  color: white;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 28px;
+  text-align: center;
+}
+
+.mock-camera::before {
+  content: "";
+  position: absolute;
+  inset: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius);
+}
+
+.mock-camera p {
+  position: relative;
+  max-width: 460px;
+  color: rgba(255, 255, 255, 0.7);
+  align-self: end;
+}
+
+.avatar-circle {
+  position: relative;
+  width: 132px;
+  height: 132px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: #ffffff;
+  color: var(--primary);
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.camera-status {
+  position: absolute;
+  top: 28px;
+  left: 28px;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.12);
+  font-weight: 900;
+  padding: 10px 12px;
+}
+
+.camera-status.recording {
+  background: var(--danger);
+}
+
+.answer-editor {
+  display: grid;
+  gap: 8px;
+  font-weight: 800;
+}
+
+.answer-plan ol {
+  margin: 16px 0 0;
+  padding-left: 22px;
+}
+
+.answer-plan li {
+  margin-bottom: 14px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.model-answer {
+  margin-top: 18px;
+  border: 1px solid #cde8db;
+  border-radius: var(--radius);
+  background: #effaf4;
+  padding: 14px;
+}
+
+.model-answer p {
+  margin-bottom: 0;
+}
+
+@media (max-width: 1060px) {
+  .interview-header,
+  .interview-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .timer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mock-camera {
+    min-height: 300px;
+  }
+}

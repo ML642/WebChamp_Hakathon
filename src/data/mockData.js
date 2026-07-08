@@ -49,6 +49,115 @@ export const modes = [
   },
 ];
 
+export const gameLevels = [
+  {
+    level: 1,
+    title: "New Challenger",
+    minXp: 0,
+    perk: "Create a profile and start practice runs.",
+    reward: "Question Scout badge",
+  },
+  {
+    level: 2,
+    title: "Prepared Speaker",
+    minXp: 250,
+    perk: "Unlock self-review streak tracking.",
+    reward: "Daily quest board",
+  },
+  {
+    level: 3,
+    title: "Structured Thinker",
+    minXp: 600,
+    perk: "Unlock mentor packet summaries.",
+    reward: "Mentor Ready badge",
+  },
+  {
+    level: 4,
+    title: "Interview Climber",
+    minXp: 1050,
+    perk: "Unlock advanced question packs.",
+    reward: "Advanced practice mode",
+  },
+  {
+    level: 5,
+    title: "Demo Finalist",
+    minXp: 1600,
+    perk: "Unlock showcase-ready progress profile.",
+    reward: "Finalist profile frame",
+  },
+];
+
+export const weeklyTargets = [
+  { id: "light", title: "Light", sessions: 2, xpBoost: 0, summary: "Two calm sessions per week." },
+  { id: "steady", title: "Steady", sessions: 4, xpBoost: 80, summary: "Enough repetition to build confidence." },
+  { id: "sprint", title: "Sprint", sessions: 6, xpBoost: 160, summary: "Hackathon-style focused prep." },
+];
+
+export const profileGoals = [
+  "First internship interview",
+  "Junior developer role",
+  "University project defense",
+  "Career switch interview",
+];
+
+export const achievementCatalog = [
+  {
+    id: "first-run",
+    title: "First Run",
+    description: "Complete your first mock interview session.",
+    xp: 120,
+  },
+  {
+    id: "mentor-ready",
+    title: "Mentor Ready",
+    description: "Generate a private mentor review link.",
+    xp: 90,
+  },
+  {
+    id: "structured-answer",
+    title: "Structured Answer",
+    description: "Mark topic, structure, and timing in self-review.",
+    xp: 80,
+  },
+  {
+    id: "question-scout",
+    title: "Question Scout",
+    description: "Explore the curated question base.",
+    xp: 50,
+  },
+];
+
+export const trainingQuestCatalog = [
+  {
+    id: "warmup",
+    title: "Warm-up answer",
+    summary: "Record one answer with a clear opening sentence.",
+    xp: 70,
+    target: 1,
+  },
+  {
+    id: "structure",
+    title: "Structure check",
+    summary: "Mark topic, structure, and timing in self-review.",
+    xp: 90,
+    target: 3,
+  },
+  {
+    id: "mentor",
+    title: "Mentor packet",
+    summary: "Generate the private review link and copy the review packet.",
+    xp: 110,
+    target: 1,
+  },
+  {
+    id: "streak",
+    title: "Streak builder",
+    summary: "Keep the weekly practice target alive.",
+    xp: 80,
+    target: 4,
+  },
+];
+
 export const pitchCards = [
   {
     label: "Problem",
@@ -156,6 +265,70 @@ export const questionBank = [
       "Client validation catches obvious mistakes quickly, but server validation is still the source of truth. I would show field-level errors and preserve user input.",
   },
   {
+    id: "fe-performance",
+    track: "frontend",
+    level: "Middle",
+    topic: "Performance",
+    title: "Avoiding unnecessary renders",
+    prompt:
+      "A React dashboard gets slow when filters update. What would you check before adding memoization everywhere?",
+    answerPlan: [
+      "Profile first to find the real bottleneck.",
+      "Check list rendering, derived data, and state ownership.",
+      "Memoize only expensive work with stable inputs.",
+    ],
+    model:
+      "I would profile first, then inspect list rendering, derived calculations, and whether state is too high in the tree. Memoization helps when the inputs are stable and the work is actually expensive.",
+  },
+  {
+    id: "fe-responsive-layout",
+    track: "frontend",
+    level: "Trainee",
+    topic: "CSS",
+    title: "Grid versus Flexbox",
+    prompt:
+      "When would you choose CSS Grid instead of Flexbox for a dashboard?",
+    answerPlan: [
+      "Use Grid for two-dimensional layout.",
+      "Use Flexbox for one-dimensional alignment.",
+      "Define stable responsive constraints.",
+    ],
+    model:
+      "Grid is better when rows and columns need to align as a system. Flexbox is better for a toolbar or a single-direction list. For dashboards, I would use grid tracks and responsive constraints.",
+  },
+  {
+    id: "fe-component-api",
+    track: "frontend",
+    level: "Middle",
+    topic: "React",
+    title: "Designing a reusable component API",
+    prompt:
+      "How would you design a Button component that supports variants without becoming hard to maintain?",
+    answerPlan: [
+      "Keep the public props small and predictable.",
+      "Map variants to known styles instead of arbitrary strings.",
+      "Document loading, disabled, and icon states.",
+    ],
+    model:
+      "I would define a small set of variants, sizes, and states, then map those props to predictable classes. The component should cover disabled, loading, and icon cases without exposing every internal style detail.",
+  },
+  {
+    id: "fe-ui-testing",
+    track: "frontend",
+    level: "Junior",
+    topic: "Testing",
+    title: "Testing a filterable list",
+    prompt:
+      "How would you test a page where users search and filter interview questions?",
+    answerPlan: [
+      "Test the default list count and visible content.",
+      "Simulate search and filter changes like a user.",
+      "Assert empty and reset states.",
+    ],
+    model:
+      "I would render the page, assert the initial questions, type into search, click filters, and check that the visible results update. I would also cover the empty state and reset behavior.",
+  },
+  {
     id: "be-private-link",
     track: "backend",
     level: "Junior",
@@ -218,6 +391,70 @@ export const questionBank = [
     ],
     model:
       "The request should store the upload and return a resource id quickly. Thumbnail generation belongs in a background worker with status tracking and retries.",
+  },
+  {
+    id: "be-auth-session",
+    track: "backend",
+    level: "Junior",
+    topic: "Auth",
+    title: "Keeping a user logged in",
+    prompt:
+      "How would you keep a user logged in safely after they sign in?",
+    answerPlan: [
+      "Create a server-controlled session.",
+      "Use HTTP-only secure cookies in production.",
+      "Expire sessions and avoid browser-readable secret storage.",
+    ],
+    model:
+      "A common approach is a server-side session with an HTTP-only secure cookie. The cookie should have proper SameSite and expiration settings, and sensitive tokens should not be readable by client scripts.",
+  },
+  {
+    id: "be-upload-limits",
+    track: "backend",
+    level: "Junior",
+    topic: "Storage",
+    title: "Handling large uploads",
+    prompt:
+      "A user uploads a video answer that is too large. What should the API and UI do?",
+    answerPlan: [
+      "Enforce clear size and type limits on the backend.",
+      "Return a helpful error status.",
+      "Offer recovery paths like shorter recording or transcript-only mode.",
+    ],
+    model:
+      "The backend should enforce size and type limits, often returning 413 for payloads that are too large. The UI should explain the limit and offer a recovery path.",
+  },
+  {
+    id: "be-idempotency",
+    track: "backend",
+    level: "Middle",
+    topic: "Reliability",
+    title: "Preventing duplicate submissions",
+    prompt:
+      "A user double-clicks submit and the same answer is saved twice. How would you prevent that?",
+    answerPlan: [
+      "Disable repeated submits in the UI.",
+      "Use idempotency keys or unique constraints on the backend.",
+      "Return the existing result for duplicate safe requests.",
+    ],
+    model:
+      "I would prevent double submit in the UI, but the backend must still be safe. An idempotency key or unique constraint can make repeated requests return the same saved answer instead of creating duplicates.",
+  },
+  {
+    id: "be-rate-limits",
+    track: "backend",
+    level: "Junior",
+    topic: "Security",
+    title: "Rate limiting auth endpoints",
+    prompt:
+      "Why should sign-in and mentor-link endpoints have rate limits?",
+    answerPlan: [
+      "Protect against brute force and token guessing.",
+      "Apply limits by IP, user, or token scope.",
+      "Return clear but not overly detailed errors.",
+    ],
+    model:
+      "Rate limits reduce brute-force sign-in attempts and token guessing. I would apply scoped limits and return a generic error so the API protects users without leaking useful attack details.",
   },
   {
     id: "ux-anxiety",
@@ -284,6 +521,70 @@ export const questionBank = [
       "I would ask a target user to choose a role, record one answer, review it, and create a mentor link while I observe where they pause or misunderstand labels.",
   },
   {
+    id: "ux-design-system",
+    track: "ux",
+    level: "Middle",
+    topic: "Design systems",
+    title: "Scaling component consistency",
+    prompt:
+      "A product grows from one dashboard to ten screens. How do you keep the UI consistent?",
+    answerPlan: [
+      "Define reusable components with documented states.",
+      "Keep spacing, typography, and interaction rules explicit.",
+      "Audit real screens instead of designing in isolation.",
+    ],
+    model:
+      "I would create a small component system with clear states like loading, empty, error, selected, and disabled. Then I would audit real screens to make sure the system fits actual product needs.",
+  },
+  {
+    id: "ux-accessibility-flow",
+    track: "ux",
+    level: "Junior",
+    topic: "Accessibility",
+    title: "Designing for camera anxiety",
+    prompt:
+      "How would you design recording for users who feel anxious about being on camera?",
+    answerPlan: [
+      "Give control before recording starts.",
+      "Show clear privacy and recording state.",
+      "Allow retry and transcript-only fallback.",
+    ],
+    model:
+      "I would provide preview, clear start and stop controls, visible privacy status, and retry. A transcript-only fallback keeps practice useful even when camera feels uncomfortable.",
+  },
+  {
+    id: "ux-prioritization",
+    track: "ux",
+    level: "Middle",
+    topic: "Product strategy",
+    title: "Choosing the MVP flow",
+    prompt:
+      "A team wants profiles, leaderboards, real video upload, and AI scoring. What would you keep for the MVP?",
+    answerPlan: [
+      "Keep the smallest complete user story.",
+      "Prioritize setup, answer, review, and mentor feedback.",
+      "Move expensive or risky ideas to roadmap.",
+    ],
+    model:
+      "I would keep one complete practice flow: choose a track, answer timed questions, review results, and share a mentor link. Real storage, leaderboards, and AI scoring can come after the loop is proven.",
+  },
+  {
+    id: "ux-handoff",
+    track: "ux",
+    level: "Junior",
+    topic: "Handoff",
+    title: "Design handoff for developers",
+    prompt:
+      "What should a designer include when handing off the interview results dashboard?",
+    answerPlan: [
+      "Show responsive layouts and component states.",
+      "Define content rules for long transcripts and empty answers.",
+      "Explain interaction behavior for review controls.",
+    ],
+    model:
+      "I would include responsive layouts, spacing and component states, empty and long-content examples, and notes for interactions like difficulty selection and mentor comments.",
+  },
+  {
     id: "qa-camera",
     track: "qa",
     level: "Junior",
@@ -348,6 +649,70 @@ export const questionBank = [
       "I would automate setup choices, saved results, mentor comments, and empty states. Real camera quality and hardware behavior should remain partly manual.",
   },
   {
+    id: "qa-timer-edge-cases",
+    track: "qa",
+    level: "Junior",
+    topic: "Risk",
+    title: "Timer edge cases",
+    prompt:
+      "What edge cases would you test for a two-minute answer timer?",
+    answerPlan: [
+      "Test start, skip prep, stop, and timeout boundaries.",
+      "Check double-clicks and tab switching.",
+      "Verify saved duration and answer status.",
+    ],
+    model:
+      "I would test starting immediately, skipping prep, stopping near zero, auto-stop at timeout, double-clicking controls, and whether the saved result matches the timer state.",
+  },
+  {
+    id: "qa-bug-report",
+    track: "qa",
+    level: "Trainee",
+    topic: "Bug reports",
+    title: "Useful camera bug report",
+    prompt:
+      "What information should be in a bug report for a broken camera permission flow?",
+    answerPlan: [
+      "Include reproduction steps and expected versus actual behavior.",
+      "Include browser, OS, device, and permission state.",
+      "Attach evidence such as screenshots or console errors.",
+    ],
+    model:
+      "A useful report includes steps, expected and actual results, environment, permission state, evidence, and severity. For camera features, HTTPS and browser support matter.",
+  },
+  {
+    id: "qa-flaky-tests",
+    track: "qa",
+    level: "Middle",
+    topic: "Automation",
+    title: "Debugging flaky tests",
+    prompt:
+      "A timer test passes locally but fails in CI. How would you investigate it?",
+    answerPlan: [
+      "Check timing assumptions and async waits.",
+      "Use fake timers or deterministic state where possible.",
+      "Collect CI logs, screenshots, and retry evidence.",
+    ],
+    model:
+      "I would look for real-time assumptions, missing awaits, or environment differences. For timer behavior, fake timers or deterministic state make the test more reliable than waiting for wall-clock time.",
+  },
+  {
+    id: "qa-test-data",
+    track: "qa",
+    level: "Junior",
+    topic: "Test data",
+    title: "Creating useful demo test data",
+    prompt:
+      "What test data would you prepare before presenting an interview coach MVP?",
+    answerPlan: [
+      "Create at least one complete session with answers.",
+      "Include missing-answer and mentor-comment states.",
+      "Use realistic names, questions, and transcripts.",
+    ],
+    model:
+      "I would prepare a complete happy-path session, one partial session, and a mentor-reviewed session. Realistic transcripts and prompts make the demo easier to trust.",
+  },
+  {
     id: "soft-feedback",
     track: "soft",
     level: "Junior",
@@ -363,7 +728,163 @@ export const questionBank = [
     model:
       "A strong answer explains the feedback, how you processed it professionally, what action you took, and how the next collaboration improved because of it.",
   },
+  {
+    id: "soft-unknown-answer",
+    track: "soft",
+    level: "Junior",
+    topic: "Behavioral",
+    title: "Handling an unknown answer",
+    prompt:
+      "Tell me about a time you did not know the answer to a technical question. What did you do?",
+    answerPlan: [
+      "Be honest without giving up.",
+      "Clarify the question and reason from what you know.",
+      "Follow up with what you learned afterward.",
+    ],
+    model:
+      "A strong answer shows honesty, reasoning, and follow-up. It is better to explain how you think and learn than to pretend you know everything.",
+  },
+  {
+    id: "soft-conflict",
+    track: "soft",
+    level: "Junior",
+    topic: "Behavioral",
+    title: "Handling team conflict",
+    prompt:
+      "Tell me about a time you disagreed with a teammate about a technical or design decision.",
+    answerPlan: [
+      "Describe the disagreement without blaming the teammate.",
+      "Explain how you compared options with evidence.",
+      "End with the decision and what you learned.",
+    ],
+    model:
+      "A strong answer shows calm communication, evidence-based decision-making, and respect for the team. The goal is to show how you disagree productively.",
+  },
+  {
+    id: "soft-deadline",
+    track: "soft",
+    level: "Junior",
+    topic: "Behavioral",
+    title: "Working under deadline pressure",
+    prompt:
+      "Tell me about a time you had too much to do before a deadline. How did you decide what mattered most?",
+    answerPlan: [
+      "Clarify the goal and constraints.",
+      "Prioritize core user value before polish.",
+      "Communicate tradeoffs early.",
+    ],
+    model:
+      "A strong answer explains how you identified the essential outcome, reduced scope responsibly, communicated tradeoffs, and still delivered useful work.",
+  },
 ];
+
+export function getWeeklyTarget(targetId) {
+  return weeklyTargets.find((target) => target.id === targetId) || weeklyTargets[1];
+}
+
+export function getPlayerProgress(xp = 0) {
+  const current = [...gameLevels].reverse().find((level) => xp >= level.minXp) || gameLevels[0];
+  const next = gameLevels.find((level) => level.minXp > xp) || null;
+  const previousMin = current.minXp;
+  const nextMin = next?.minXp || current.minXp + 650;
+  const progress = Math.min(100, Math.round(((xp - previousMin) / (nextMin - previousMin)) * 100));
+
+  return {
+    current,
+    next,
+    progress,
+    xpToNext: next ? next.minXp - xp : 0,
+  };
+}
+
+export function getLevelLadder(xp = 0) {
+  return gameLevels.map((level) => {
+    const next = gameLevels.find((item) => item.minXp > level.minXp);
+    const cap = next ? next.minXp : level.minXp + 650;
+    const progress = Math.min(100, Math.max(0, Math.round(((xp - level.minXp) / (cap - level.minXp)) * 100)));
+
+    return {
+      ...level,
+      unlocked: xp >= level.minXp,
+      progress,
+    };
+  });
+}
+
+export function getTrainingQuests(profile, session) {
+  const answers = session?.answers || [];
+  const completeChecklistCount = answers.filter((answer) =>
+    Object.values(answer.checklist || {}).every(Boolean)
+  ).length;
+
+  return trainingQuestCatalog.map((quest) => {
+    const progressMap = {
+      warmup: answers.length,
+      structure: completeChecklistCount,
+      mentor: session?.mentorToken ? 1 : 0,
+      streak: profile?.streak || 0,
+    };
+    const progress = Math.min(quest.target, progressMap[quest.id] || 0);
+
+    return {
+      ...quest,
+      progress,
+      complete: progress >= quest.target,
+    };
+  });
+}
+
+export function createPlayerProfile(form) {
+  const weeklyTarget = getWeeklyTarget(form.weeklyTarget);
+  const startingXp = 120 + weeklyTarget.xpBoost;
+  const displayName = (form.name || form.nickname || "").trim() || "Demo Candidate";
+
+  return {
+    id: `player-${Date.now()}`,
+    name: displayName,
+    nickname: form.nickname?.trim() || displayName,
+    email: form.email?.trim() || "candidate@webchamp.demo",
+    goal: form.goal,
+    studying: form.studying?.trim() || form.goal,
+    track: form.track,
+    level: form.level,
+    weeklyTarget: weeklyTarget.id,
+    xp: startingXp,
+    streak: weeklyTarget.sessions >= 4 ? 3 : 1,
+    completedSessions: 0,
+    achievements: ["question-scout"],
+  };
+}
+
+export function awardSessionXp(profile, answers = [], hasMentorLink = false) {
+  if (!profile) {
+    return null;
+  }
+
+  const completeChecklistCount = answers.filter((answer) =>
+    Object.values(answer.checklist || {}).every(Boolean)
+  ).length;
+  const earnedXp = 140 + answers.length * 55 + completeChecklistCount * 25 + (hasMentorLink ? 90 : 0);
+  const achievements = new Set(profile.achievements);
+
+  if (answers.length > 0) {
+    achievements.add("first-run");
+  }
+  if (hasMentorLink) {
+    achievements.add("mentor-ready");
+  }
+  if (completeChecklistCount > 0) {
+    achievements.add("structured-answer");
+  }
+
+  return {
+    ...profile,
+    xp: profile.xp + earnedXp,
+    streak: profile.streak + 1,
+    completedSessions: profile.completedSessions + 1,
+    achievements: Array.from(achievements),
+  };
+}
 
 export function getTrack(trackId) {
   return tracks.find((track) => track.id === trackId) || tracks[0];

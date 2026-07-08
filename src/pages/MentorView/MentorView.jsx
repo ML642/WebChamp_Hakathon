@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Badge, Button, EmptyState, MetricCard } from "../components/Ui";
+import { Badge, Button, EmptyState, MetricCard } from "../../components/Ui";
+import "./MentorView.css";
 
 function MentorCommentBox({ questionId, initialValue, onSave }) {
   const [value, setValue] = useState(initialValue || "");
@@ -19,7 +20,7 @@ function MentorCommentBox({ questionId, initialValue, onSave }) {
   );
 }
 
-function MentorView({ session, mentorLink, onSaveComment, onBackToResults, onReset }) {
+function MentorView({ session, playerProfile, playerProgress, mentorLink, onSaveComment, onBackToResults, onReset }) {
   if (!session) {
     return (
       <EmptyState
@@ -51,6 +52,21 @@ function MentorView({ session, mentorLink, onSaveComment, onBackToResults, onRes
         </div>
       </div>
 
+      {playerProfile ? (
+        <div className="panel mentor-player-panel">
+          <div>
+            <Badge tone="warning">Candidate profile</Badge>
+            <h2>{playerProfile.name}</h2>
+            <p>{playerProfile.goal}</p>
+          </div>
+          <div className="mentor-level-card">
+            <span>Level {playerProgress.current.level}</span>
+            <strong>{playerProgress.current.title}</strong>
+            <small>{playerProfile.xp} XP total</small>
+          </div>
+        </div>
+      ) : null}
+
       <div className="mentor-list">
         {session.questions.map((question, index) => {
           const answer = session.answers.find((item) => item.questionId === question.id);
@@ -68,7 +84,7 @@ function MentorView({ session, mentorLink, onSaveComment, onBackToResults, onRes
                 </div>
                 <h2>{question.title}</h2>
                 <p>{question.prompt}</p>
-                <div className="review-grid">
+                <div className="mentor-review-grid">
                   <div>
                     <strong>Candidate transcript</strong>
                     <p>{answer?.transcript || "No answer recorded."}</p>

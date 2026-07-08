@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
-import { Badge, Button, EmptyState, MetricCard } from "../components/Ui";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Badge, Button, EmptyState, MetricCard } from "../../components/Ui";
+import "./InterviewRoom.css";
 
 const prepSeconds = 10;
 const answerSeconds = 120;
@@ -18,6 +19,8 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
 
   const question = session?.questions[activeQuestionIndex];
   const existingAnswer = session?.answers.find((answer) => answer.questionId === question?.id);
+  const hasExistingAnswer = Boolean(existingAnswer);
+  const existingTranscript = existingAnswer?.transcript || "";
 
   const progressLabel = useMemo(() => {
     if (!session) {
@@ -28,11 +31,20 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
   }, [activeQuestionIndex, session]);
 
   useEffect(() => {
-    setPhase(existingAnswer ? "saved" : "prep");
+    setPhase(hasExistingAnswer ? "saved" : "prep");
     setPrepLeft(prepSeconds);
     setAnswerLeft(answerSeconds);
-    setDraft(existingAnswer?.transcript || "");
-  }, [activeQuestionIndex, existingAnswer?.questionId]);
+    setDraft(existingTranscript);
+  }, [activeQuestionIndex, existingTranscript, hasExistingAnswer]);
+
+  const saveCurrentAnswer = useCallback(() => {
+    if (!question) {
+      return;
+    }
+
+    onSaveAnswer(question.id, draft);
+    setPhase("saved");
+  }, [draft, onSaveAnswer, question]);
 
   useEffect(() => {
     if (phase !== "prep") {
@@ -60,7 +72,7 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
 
     const timer = window.setTimeout(() => setAnswerLeft((value) => value - 1), 1000);
     return () => window.clearTimeout(timer);
-  }, [phase, answerLeft]);
+  }, [phase, answerLeft, saveCurrentAnswer]);
 
   if (!session || !question) {
     return (
@@ -71,11 +83,6 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
         onAction={onBackToSetup}
       />
     );
-  }
-
-  function saveCurrentAnswer() {
-    onSaveAnswer(question.id, draft);
-    setPhase("saved");
   }
 
   function startRecording() {

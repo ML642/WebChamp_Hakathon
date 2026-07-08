@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
-import { Button, Badge } from "../components/Ui";
-import { pitchCards, questionBank, roadmap, tracks } from "../data/mockData";
+import { Button, Badge } from "../../components/Ui";
+import { pitchCards, questionBank, roadmap, tracks } from "../../data/mockData";
+import "./LandingPage.css";
 
-function LandingPage({ onStart, onLoadDemo }) {
+function LandingPage({ onStart, onOpenQuestionBase, onLoadDemo }) {
   const [activeTrack, setActiveTrack] = useState("all");
   const visibleQuestions = useMemo(() => {
     const filtered =
@@ -64,6 +65,9 @@ function LandingPage({ onStart, onLoadDemo }) {
               A lightweight mock database powers setup, interview practice, model answers, and mentor review.
               It is intentionally content-first, so the MVP feels useful without backend complexity.
             </p>
+            <div className="action-row">
+              <Button variant="secondary" onClick={onOpenQuestionBase}>Open full question base</Button>
+            </div>
           </div>
           <div className="question-base-stats">
             <strong>{questionBank.length}</strong>

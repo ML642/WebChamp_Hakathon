@@ -1,0 +1,322 @@
+.dashboard-hero {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
+.player-progress-panel {
+  margin-top: 18px;
+}
+
+.player-progress-main {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  align-items: center;
+}
+
+.player-progress-main h2 {
+  margin: 12px 0 0;
+}
+
+.player-level-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #f8fafc;
+  padding: 16px;
+}
+
+.player-level-card span,
+.player-level-card small {
+  color: var(--muted);
+  display: block;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.player-level-card strong {
+  display: block;
+  font-size: 22px;
+  margin-top: 6px;
+}
+
+.results-level-bar {
+  height: 10px;
+  border-radius: var(--radius);
+  background: #e6ebf2;
+  margin: 14px 0 10px;
+  overflow: hidden;
+}
+
+.results-level-bar > div {
+  height: 100%;
+  border-radius: var(--radius);
+  background: var(--primary);
+}
+
+.achievement-row {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: 16px;
+}
+
+.achievement-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #f8fafc;
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+}
+
+.achievement-card span,
+.achievement-card small {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.quest-and-ladder-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  margin-top: 16px;
+}
+
+.quest-board,
+.results-ladder {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #f8fafc;
+  padding: 16px;
+}
+
+.quest-board h3,
+.results-ladder h3 {
+  margin: 0;
+}
+
+.quest-list {
+  display: grid;
+  gap: 10px;
+}
+
+.quest-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: white;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  padding: 12px;
+}
+
+.quest-card.complete {
+  border-color: #b7dfc8;
+  background: var(--success-bg);
+}
+
+.quest-card strong,
+.quest-card span {
+  display: block;
+}
+
+.quest-card span,
+.quest-card small,
+.results-ladder-step small,
+.results-ladder-step span {
+  color: var(--muted);
+}
+
+.quest-card span {
+  line-height: 1.45;
+  margin-top: 3px;
+}
+
+.quest-card small,
+.results-ladder-step small,
+.results-ladder-step span {
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.results-ladder-list {
+  display: grid;
+  gap: 8px;
+}
+
+.results-ladder-step {
+  border-left: 4px solid var(--line-strong);
+  background: white;
+  border-radius: var(--radius);
+  padding: 10px 12px;
+}
+
+.results-ladder-step.unlocked {
+  border-left-color: var(--success);
+}
+
+.results-ladder-step strong,
+.results-ladder-step small,
+.results-ladder-step span {
+  display: block;
+}
+
+.results-ladder-step strong {
+  margin: 3px 0;
+}
+
+.results-layout {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1.35fr) minmax(340px, 0.65fr);
+  margin-top: 18px;
+}
+
+.answer-list {
+  display: grid;
+  gap: 16px;
+}
+
+.answer-card {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: 260px 1fr;
+}
+
+.answer-media {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.video-placeholder {
+  min-height: 160px;
+  border-radius: var(--radius);
+  background: var(--panel-strong);
+  color: white;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  text-align: center;
+  font-weight: 900;
+}
+
+.review-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, 1fr);
+  margin-top: 14px;
+}
+
+.review-grid > div {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #f8fafc;
+  padding: 14px;
+}
+
+.review-grid p,
+.review-grid ul {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.self-review {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.self-review label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+}
+
+.self-review input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
+.difficulty-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.difficulty-row button {
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: transparent;
+  cursor: pointer;
+  font-weight: 800;
+  padding: 0 12px;
+  text-transform: capitalize;
+}
+
+.difficulty-row button.selected {
+  background: white;
+  box-shadow: 0 4px 14px rgba(21, 26, 36, 0.08);
+}
+
+.difficulty-row span {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.share-panel {
+  position: sticky;
+  top: 92px;
+  align-self: start;
+}
+
+.stacked-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.demo-note {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #f8fafc;
+  margin-top: 16px;
+  padding: 14px;
+}
+
+@media (max-width: 1060px) {
+  .dashboard-hero,
+  .player-progress-main,
+  .results-layout,
+  .answer-card {
+    grid-template-columns: 1fr;
+  }
+
+  .achievement-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .quest-and-ladder-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .share-panel {
+    position: static;
+  }
+}
+
+@media (max-width: 720px) {
+  .review-grid,
+  .achievement-row,
+  .quest-card {
+    grid-template-columns: 1fr;
+  }
+}

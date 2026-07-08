@@ -1,0 +1,144 @@
+.setup-layout {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1fr) minmax(330px, 0.75fr);
+}
+
+.setup-layout > .panel:first-child {
+  grid-column: 1 / -1;
+}
+
+.option-grid.two {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.option-card,
+.mode-card {
+  min-height: 128px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fafbfc;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  text-align: left;
+  transition: 160ms ease;
+}
+
+.mode-card {
+  min-height: 88px;
+}
+
+.option-card span,
+.option-card small,
+.mode-card span {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.option-card.selected,
+.mode-card.selected {
+  border-color: var(--primary);
+  background: #f0f3f8;
+}
+
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #f3f5f8;
+  padding: 4px;
+  margin-bottom: 14px;
+}
+
+.segmented button {
+  min-height: 38px;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.segmented button.selected {
+  background: white;
+  box-shadow: 0 4px 14px rgba(21, 26, 36, 0.08);
+}
+
+.mode-list {
+  display: grid;
+  gap: 10px;
+}
+
+.session-plan ol {
+  margin: 16px 0 0;
+  padding-left: 22px;
+}
+
+.session-plan li {
+  margin-bottom: 14px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.session-plan li strong,
+.session-plan li span {
+  display: block;
+}
+
+.setup-quest-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #f8fafc;
+  margin-top: 18px;
+  padding: 14px;
+}
+
+.setup-quest-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.setup-quest-item {
+  border-radius: var(--radius);
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px;
+}
+
+.setup-quest-item span,
+.setup-quest-item small {
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.setup-quest-item small {
+  color: var(--muted);
+}
+
+@media (max-width: 1060px) {
+  .setup-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .option-grid.two {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .option-grid.two {
+    grid-template-columns: 1fr;
+  }
+}

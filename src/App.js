@@ -1,11 +1,21 @@
 import { useMemo, useState } from "react";
 import "./App.css";
-import { buildQuestions, createDemoAnswers, createMockAnswer } from "./data/mockData";
-import LandingPage from "./pages/LandingPage";
-import SetupPage from "./pages/SetupPage";
-import InterviewRoom from "./pages/InterviewRoom";
-import ResultsDashboard from "./pages/ResultsDashboard";
-import MentorView from "./pages/MentorView";
+import {
+  awardSessionXp,
+  buildQuestions,
+  createDemoAnswers,
+  createMockAnswer,
+  createPlayerProfile,
+  getPlayerProgress,
+} from "./data/mockData";
+import LandingPage from "./pages/LandingPage/LandingPage";
+import LoginPage from "./pages/LoginPage/LoginPage";
+import RegistrationPage from "./pages/RegistrationPage/RegistrationPage";
+import SetupPage from "./pages/SetupPage/SetupPage";
+import QuestionBasePage from "./pages/QuestionBasePage/QuestionBasePage";
+import InterviewRoom from "./pages/InterviewRoom/InterviewRoom";
+import ResultsDashboard from "./pages/ResultsDashboard/ResultsDashboard";
+import MentorView from "./pages/MentorView/MentorView";
 
 const initialSettings = {
   track: "frontend",
@@ -16,6 +26,7 @@ const initialSettings = {
 const navItems = [
   { id: "landing", label: "Landing" },
   { id: "setup", label: "Setup" },
+  { id: "questionBase", label: "Question Base" },
   { id: "interview", label: "Interview" },
   { id: "results", label: "Results" },
   { id: "mentor", label: "Mentor" },
@@ -31,6 +42,7 @@ function createSession(settings) {
     answers: [],
     mentorComments: {},
     mentorToken: `mentor-${Math.random().toString(36).slice(2, 8)}`,
+    rewarded: false,
     xp: 360,
     streak: 4,
   };
@@ -38,11 +50,16 @@ function createSession(settings) {
 
 function App() {
   const [page, setPage] = useState("landing");
+  const [playerProfile, setPlayerProfile] = useState(null);
   const [settings, setSettings] = useState(initialSettings);
   const [session, setSession] = useState(null);
   const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
 
   const previewQuestions = useMemo(() => buildQuestions(settings), [settings]);
+  const playerProgress = useMemo(
+    () => getPlayerProgress(playerProfile?.xp || 0),
+    [playerProfile?.xp]
+  );
   const mentorLink = session ? `https://webchamp.demo/review/${session.mentorToken}` : "";
 
   function updateSetting(key, value) {
@@ -56,15 +73,60 @@ function App() {
     setPage("interview");
   }
 
+  function registerPlayer(profile) {
+    setPlayerProfile(profile);
+    setSettings((current) => ({
+      ...current,
+      track: profile.track,
+      level: profile.level,
+    }));
+    setPage("setup");
+  }
+
+  function loginPlayer(credentials) {
+    const emailName = credentials.email.split("@")[0] || "candidate";
+    const profile = createPlayerProfile({
+      name: emailName
+        .split(/[._-]/)
+        .filter(Boolean)
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(" ") || "Returning Candidate",
+      email: credentials.email,
+      track: settings.track,
+      level: settings.level,
+      goal: "Junior developer role",
+      weeklyTarget: "steady",
+    });
+
+    setPlayerProfile(profile);
+    setPage("setup");
+  }
+
   function loadDemoSession() {
     const demoSettings = { track: "frontend", level: "Junior", mode: "quick" };
     const nextSession = createSession(demoSettings);
     const demoAnswers = createDemoAnswers(nextSession.questions);
+    const demoProfile = createPlayerProfile({
+      name: "Maksym Demo",
+      email: "candidate@webchamp.demo",
+      track: "frontend",
+      level: "Junior",
+      goal: "Junior developer role",
+      weeklyTarget: "sprint",
+    });
 
+    setPlayerProfile({
+      ...demoProfile,
+      xp: 980,
+      streak: 8,
+      completedSessions: 3,
+      achievements: ["question-scout", "first-run", "mentor-ready", "structured-answer"],
+    });
     setSettings(demoSettings);
     setSession({
       ...nextSession,
       answers: demoAnswers,
+      rewarded: true,
       mentorComments: {
         [nextSession.questions[0].id]:
           "Strong structure. Next time, add one concrete example from a project to make the answer more memorable.",
@@ -103,11 +165,25 @@ function App() {
     }
 
     if (activeQuestionIndex >= session.questions.length - 1) {
-      setPage("results");
+      finishSession();
       return;
     }
 
     setActiveQuestionIndex((index) => index + 1);
+  }
+
+  function finishSession() {
+    if (!session) {
+      setPage("results");
+      return;
+    }
+
+    if (!session.rewarded && playerProfile) {
+      setPlayerProfile((current) => awardSessionXp(current, session.answers, true));
+      setSession((current) => ({ ...current, rewarded: true }));
+    }
+
+    setPage("results");
   }
 
   function updateChecklist(questionId, key) {
@@ -157,6 +233,7 @@ function App() {
   function resetDemo() {
     setSettings(initialSettings);
     setSession(null);
+    setPlayerProfile(null);
     setActiveQuestionIndex(0);
     setPage("landing");
   }
@@ -177,7 +254,6 @@ function App() {
           <span className="brand-mark">WC</span>
           <span>
             <strong>WebChamp Interview Coach</strong>
-            <small>Mock MVP frontend</small>
           </span>
         </button>
 
@@ -193,13 +269,47 @@ function App() {
             </button>
           ))}
         </nav>
+
+        <div className="header-actions" aria-label="Account actions">
+          <button
+            className={page === "login" ? "nav-link auth-link active" : "nav-link auth-link"}
+            type="button"
+            onClick={() => setPage("login")}
+          >
+            Log in
+          </button>
+          <button
+            className={page === "register" ? "nav-link auth-link primary active" : "nav-link auth-link primary"}
+            type="button"
+            onClick={() => setPage("register")}
+          >
+            Register
+          </button>
+        </div>
       </header>
 
       <main>
         {page === "landing" && (
           <LandingPage
-            onStart={() => setPage("setup")}
+            onStart={() => setPage("register")}
+            onOpenQuestionBase={() => setPage("questionBase")}
             onLoadDemo={loadDemoSession}
+          />
+        )}
+
+        {page === "register" && (
+          <RegistrationPage
+            onRegister={registerPlayer}
+            onLoadDemo={loadDemoSession}
+            onOpenLogin={() => setPage("login")}
+          />
+        )}
+
+        {page === "login" && (
+          <LoginPage
+            onLogin={loginPlayer}
+            onLoadDemo={loadDemoSession}
+            onOpenRegister={() => setPage("register")}
           />
         )}
 
@@ -207,10 +317,15 @@ function App() {
           <SetupPage
             settings={settings}
             questions={previewQuestions}
+            playerProfile={playerProfile}
             onUpdateSetting={updateSetting}
             onStart={() => startSession(settings)}
             onLoadDemo={loadDemoSession}
           />
+        )}
+
+        {page === "questionBase" && (
+          <QuestionBasePage onStartPractice={() => setPage("register")} />
         )}
 
         {page === "interview" && (
@@ -220,13 +335,15 @@ function App() {
             onSaveAnswer={saveAnswer}
             onNext={goToNextQuestion}
             onBackToSetup={() => setPage("setup")}
-            onFinish={() => setPage("results")}
+            onFinish={finishSession}
           />
         )}
 
         {page === "results" && (
           <ResultsDashboard
             session={session}
+            playerProfile={playerProfile}
+            playerProgress={playerProgress}
             mentorLink={mentorLink}
             onUpdateChecklist={updateChecklist}
             onUpdateDifficulty={updateDifficulty}
@@ -238,6 +355,8 @@ function App() {
         {page === "mentor" && (
           <MentorView
             session={session}
+            playerProfile={playerProfile}
+            playerProgress={playerProgress}
             mentorLink={mentorLink}
             onSaveComment={saveMentorComment}
             onBackToResults={() => setPage("results")}

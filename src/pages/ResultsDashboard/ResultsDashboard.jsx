@@ -1,4 +1,6 @@
-import { Badge, Button, EmptyState, MetricCard } from "../components/Ui";
+import { Badge, Button, EmptyState, MetricCard } from "../../components/Ui";
+import { achievementCatalog, getLevelLadder, getTrainingQuests } from "../../data/mockData";
+import "./ResultsDashboard.css";
 
 function buildReviewPacket(session, mentorLink) {
   if (!session) {
@@ -27,6 +29,8 @@ function buildReviewPacket(session, mentorLink) {
 
 function ResultsDashboard({
   session,
+  playerProfile,
+  playerProgress,
   mentorLink,
   onUpdateChecklist,
   onUpdateDifficulty,
@@ -49,6 +53,11 @@ function ResultsDashboard({
   const averageScore = recordedCount
     ? Math.round(session.answers.reduce((sum, answer) => sum + answer.score, 0) / recordedCount)
     : 0;
+  const unlockedAchievements = playerProfile
+    ? achievementCatalog.filter((achievement) => playerProfile.achievements.includes(achievement.id))
+    : [];
+  const trainingQuests = getTrainingQuests(playerProfile, session);
+  const levelLadder = getLevelLadder(playerProfile?.xp || 0);
 
   async function copyPacket() {
     const packet = buildReviewPacket(session, mentorLink);
@@ -73,6 +82,72 @@ function ResultsDashboard({
           <MetricCard label="Progress" value={`${progress}%`} detail={`${session.streak} day streak`} />
         </div>
       </div>
+
+      {playerProfile ? (
+        <section className="panel player-progress-panel">
+          <div className="player-progress-main">
+            <div>
+              <Badge tone="success">Player level</Badge>
+              <h2>{playerProfile.name}</h2>
+              <p>{playerProfile.goal}</p>
+            </div>
+            <div className="player-level-card">
+              <span>Level {playerProgress.current.level}</span>
+              <strong>{playerProgress.current.title}</strong>
+              <div className="results-level-bar">
+                <div style={{ width: `${playerProgress.progress}%` }} />
+              </div>
+              <small>{playerProgress.xpToNext} XP to {playerProgress.next?.title || "max level"}</small>
+            </div>
+          </div>
+
+          <div className="achievement-row">
+            {unlockedAchievements.map((achievement) => (
+              <article className="achievement-card" key={achievement.id}>
+                <strong>{achievement.title}</strong>
+                <span>{achievement.description}</span>
+                <small>+{achievement.xp} XP</small>
+              </article>
+            ))}
+          </div>
+
+          <div className="quest-and-ladder-grid">
+            <div className="quest-board">
+              <div className="panel-heading">
+                <h3>Daily quests</h3>
+                <Badge>{trainingQuests.filter((quest) => quest.complete).length}/{trainingQuests.length} done</Badge>
+              </div>
+              <div className="quest-list">
+                {trainingQuests.map((quest) => (
+                  <article className={quest.complete ? "quest-card complete" : "quest-card"} key={quest.id}>
+                    <div>
+                      <strong>{quest.title}</strong>
+                      <span>{quest.summary}</span>
+                    </div>
+                    <small>{quest.progress}/{quest.target} +{quest.xp} XP</small>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="results-ladder">
+              <div className="panel-heading">
+                <h3>Level path</h3>
+                <Badge>{playerProgress.current.title}</Badge>
+              </div>
+              <div className="results-ladder-list">
+                {levelLadder.map((level) => (
+                  <div className={level.unlocked ? "results-ladder-step unlocked" : "results-ladder-step"} key={level.level}>
+                    <span>Level {level.level}</span>
+                    <strong>{level.title}</strong>
+                    <small>{level.reward}</small>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <div className="results-layout">
         <div className="answer-list">
