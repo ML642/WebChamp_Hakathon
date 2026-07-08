@@ -1,8 +1,8 @@
-import { render, screen } from '@testing-library/react';
-import App from './App';
+import { render, screen } from "@testing-library/react";
+import App from "./App";
 
-test('renders learn react link', () => {
+test("renders WebChamp landing page", () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+  expect(screen.getAllByText(/WebChamp Interview Coach/i).length).toBeGreaterThan(0);
+  expect(screen.getByText(/Build practice session/i)).toBeInTheDocument();
 });
