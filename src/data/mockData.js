@@ -124,6 +124,38 @@ export const questionBank = [
       "If the element triggers an action, I would use a real button and style it as a card. That gives semantics, focus, and keyboard support without extra custom code.",
   },
   {
+    id: "fe-effects",
+    track: "frontend",
+    level: "Junior",
+    topic: "React",
+    title: "Cleaning up effects",
+    prompt:
+      "A component starts a timer inside useEffect. What problem appears if you do not clean it up?",
+    answerPlan: [
+      "Name the leaked timer or duplicate subscription.",
+      "Return a cleanup function from useEffect.",
+      "Explain unmounts and dependency changes.",
+    ],
+    model:
+      "Without cleanup, a timer can continue after unmount or be duplicated after dependency changes. I would return a cleanup function from useEffect to clear the timer.",
+  },
+  {
+    id: "fe-form-validation",
+    track: "frontend",
+    level: "Junior",
+    topic: "Forms",
+    title: "Client and server validation",
+    prompt:
+      "How would you handle validation in a registration form?",
+    answerPlan: [
+      "Use client validation for fast feedback.",
+      "Treat server validation as the source of truth.",
+      "Show clear field-level errors.",
+    ],
+    model:
+      "Client validation catches obvious mistakes quickly, but server validation is still the source of truth. I would show field-level errors and preserve user input.",
+  },
+  {
     id: "be-private-link",
     track: "backend",
     level: "Junior",
@@ -154,6 +186,38 @@ export const questionBank = [
     ],
     model:
       "If the session id points to no resource, I would return 404 Not Found. If the session exists but the payload is invalid, I would use a validation error response.",
+  },
+  {
+    id: "be-n-plus-one",
+    track: "backend",
+    level: "Junior",
+    topic: "SQL",
+    title: "N plus one queries",
+    prompt:
+      "An endpoint loads sessions and then runs one query per session to load answers. What is the issue?",
+    answerPlan: [
+      "Name the N plus one pattern.",
+      "Batch related IDs or use a join.",
+      "Measure query count before and after.",
+    ],
+    model:
+      "That is an N plus one query pattern. It can become slow as the list grows, so I would batch related data, use a join, or use eager loading.",
+  },
+  {
+    id: "be-background-jobs",
+    track: "backend",
+    level: "Middle",
+    topic: "Async tasks",
+    title: "Slow processing in requests",
+    prompt:
+      "A video upload endpoint also generates thumbnails and blocks for 20 seconds. How would you redesign it?",
+    answerPlan: [
+      "Return quickly after storing the upload.",
+      "Move slow processing to a background job.",
+      "Expose status and retry behavior.",
+    ],
+    model:
+      "The request should store the upload and return a resource id quickly. Thumbnail generation belongs in a background worker with status tracking and retries.",
   },
   {
     id: "ux-anxiety",
@@ -188,6 +252,38 @@ export const questionBank = [
       "I would track completion, repeat practice, mentor comments, and whether users improve self-review scores over time. Pure signups are too shallow.",
   },
   {
+    id: "ux-empty-state",
+    track: "ux",
+    level: "Junior",
+    topic: "UX writing",
+    title: "Helpful empty states",
+    prompt:
+      "A review dashboard has no recorded answers yet. What should the empty state communicate?",
+    answerPlan: [
+      "Explain what is missing.",
+      "Give one clear next action.",
+      "Avoid blaming the user.",
+    ],
+    model:
+      "A helpful empty state explains the current situation and gives one clear next action. It should reduce anxiety, not make the user feel stuck.",
+  },
+  {
+    id: "ux-usability-test",
+    track: "ux",
+    level: "Junior",
+    topic: "Research",
+    title: "Testing the first session",
+    prompt:
+      "How would you run a quick usability test for the first interview practice flow?",
+    answerPlan: [
+      "Give a realistic task.",
+      "Observe without leading the user.",
+      "Capture completion, confusion, and confidence.",
+    ],
+    model:
+      "I would ask a target user to choose a role, record one answer, review it, and create a mentor link while I observe where they pause or misunderstand labels.",
+  },
+  {
     id: "qa-camera",
     track: "qa",
     level: "Junior",
@@ -218,6 +314,38 @@ export const questionBank = [
     ],
     model:
       "I would prioritize mentor comments because feedback is part of the core value. A misaligned badge is visible, but it does not block the product story.",
+  },
+  {
+    id: "qa-regression",
+    track: "qa",
+    level: "Junior",
+    topic: "Regression",
+    title: "Choosing regression tests",
+    prompt:
+      "A small release changes the recording screen. Which regression tests would you run first?",
+    answerPlan: [
+      "Cover the main setup to results path.",
+      "Include denied camera or transcript-only fallback.",
+      "Check that saved answers still appear in results.",
+    ],
+    model:
+      "I would run the main flow first: setup, mock recording, save answer, results, and mentor review. Then I would test denied camera and missing-answer states.",
+  },
+  {
+    id: "qa-automation-scope",
+    track: "qa",
+    level: "Middle",
+    topic: "Automation",
+    title: "What to automate first",
+    prompt:
+      "Which parts of this interview coach would you automate, and which would you leave manual?",
+    answerPlan: [
+      "Automate deterministic state transitions.",
+      "Mock browser-specific media behavior.",
+      "Leave real camera quality checks manual.",
+    ],
+    model:
+      "I would automate setup choices, saved results, mentor comments, and empty states. Real camera quality and hardware behavior should remain partly manual.",
   },
   {
     id: "soft-feedback",

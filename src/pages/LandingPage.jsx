@@ -1,7 +1,18 @@
+import { useMemo, useState } from "react";
 import { Button, Badge } from "../components/Ui";
-import { pitchCards, roadmap } from "../data/mockData";
+import { pitchCards, questionBank, roadmap, tracks } from "../data/mockData";
 
 function LandingPage({ onStart, onLoadDemo }) {
+  const [activeTrack, setActiveTrack] = useState("all");
+  const visibleQuestions = useMemo(() => {
+    const filtered =
+      activeTrack === "all"
+        ? questionBank
+        : questionBank.filter((question) => question.track === activeTrack);
+
+    return filtered.slice(0, 6);
+  }, [activeTrack]);
+
   return (
     <section className="page landing-page">
       <div className="hero-grid">
@@ -43,6 +54,63 @@ function LandingPage({ onStart, onLoadDemo }) {
           </article>
         ))}
       </div>
+
+      <section className="panel question-base-panel">
+        <div className="question-base-header">
+          <div>
+            <Badge tone="success">Question Base</Badge>
+            <h2>Curated real-world interview-style questions.</h2>
+            <p>
+              A lightweight mock database powers setup, interview practice, model answers, and mentor review.
+              It is intentionally content-first, so the MVP feels useful without backend complexity.
+            </p>
+          </div>
+          <div className="question-base-stats">
+            <strong>{questionBank.length}</strong>
+            <span>mock questions</span>
+          </div>
+        </div>
+
+        <div className="question-base-controls" aria-label="Question base filters">
+          <button
+            className={activeTrack === "all" ? "filter-chip active" : "filter-chip"}
+            type="button"
+            onClick={() => setActiveTrack("all")}
+          >
+            All
+            <span>{questionBank.length}</span>
+          </button>
+          {tracks.map((track) => {
+            const count = questionBank.filter((question) => question.track === track.id).length;
+
+            return (
+              <button
+                key={track.id}
+                className={activeTrack === track.id ? "filter-chip active" : "filter-chip"}
+                type="button"
+                onClick={() => setActiveTrack(track.id)}
+              >
+                {track.title}
+                <span>{count}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="question-base-grid">
+          {visibleQuestions.map((question) => (
+            <article className="question-preview" key={question.id}>
+              <div className="question-meta">
+                <Badge>{question.topic}</Badge>
+                <span>{question.level}</span>
+              </div>
+              <h3>{question.title}</h3>
+              <p>{question.prompt}</p>
+              <small>{question.answerPlan.length} answer checkpoints</small>
+            </article>
+          ))}
+        </div>
+      </section>
 
       <section className="panel roadmap-panel">
         <div>
