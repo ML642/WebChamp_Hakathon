@@ -30,31 +30,98 @@
   margin: 0;
 }
 
-.registration-group {
+.registration-stepper {
   display: grid;
-  gap: 14px;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.step-pill {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 2px 10px;
+  align-items: center;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: #f8fafc;
-  padding: 16px;
+  padding: 12px;
 }
 
-.registration-group-heading {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+.step-pill strong {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  grid-row: span 2;
+  place-items: center;
+  border-radius: var(--radius);
+  background: #e6ebf2;
+  color: #3d4451;
+  font-size: 14px;
 }
 
-.registration-group-heading span {
+.step-pill span,
+.step-pill small {
+  display: block;
+  min-width: 0;
+}
+
+.step-pill span {
+  font-weight: 900;
+}
+
+.step-pill small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.step-pill.active {
+  border-color: var(--primary);
+  background: white;
+}
+
+.step-pill.active strong,
+.step-pill.complete strong {
+  background: var(--primary);
+  color: white;
+}
+
+.registration-progress {
+  height: 8px;
+  border-radius: var(--radius);
+  background: #e6ebf2;
+  overflow: hidden;
+}
+
+.registration-progress > div {
+  height: 100%;
+  border-radius: var(--radius);
+  background: var(--primary);
+  transition: width 180ms ease;
+}
+
+.registration-step {
+  display: grid;
+  gap: 16px;
+  min-height: 330px;
+  align-content: start;
+}
+
+.registration-step-heading {
+  display: grid;
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+}
+
+.registration-step-heading span {
   color: var(--muted);
   font-size: 12px;
   font-weight: 900;
   text-transform: uppercase;
 }
 
-.registration-group-heading h2 {
+.registration-step-heading h2 {
   margin: 0;
 }
 
@@ -141,7 +208,12 @@ select:focus {
 }
 
 @media (max-width: 720px) {
+  .registration-stepper,
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .registration-step {
+    min-height: 0;
   }
 }

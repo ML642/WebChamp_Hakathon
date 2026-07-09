@@ -1,9 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { CircleUserRound } from "lucide-react";
 import "./App.css";
 import {
   awardSessionXp,
   buildQuestions,
   createDemoAnswers,
+  createMockHistorySessions,
   createMockAnswer,
   createPlayerProfile,
   getPlayerProgress,
@@ -16,6 +18,7 @@ import QuestionBasePage from "./pages/QuestionBasePage/QuestionBasePage";
 import InterviewRoom from "./pages/InterviewRoom/InterviewRoom";
 import ResultsDashboard from "./pages/ResultsDashboard/ResultsDashboard";
 import MentorView from "./pages/MentorView/MentorView";
+import HistoryPage from "./pages/HistoryPage/HistoryPage";
 
 const initialSettings = {
   track: "frontend",
@@ -24,13 +27,30 @@ const initialSettings = {
 };
 
 const navItems = [
-  { id: "landing", label: "Landing" },
-  { id: "setup", label: "Setup" },
-  { id: "questionBase", label: "Question Base" },
-  { id: "interview", label: "Interview" },
-  { id: "results", label: "Results" },
-  { id: "mentor", label: "Mentor" },
+  { id: "landing", label: "Home" },
+  { id: "setup", label: "Practice Setup" },
+  { id: "questionBase", label: "Questions" },
+  { id: "interview", label: "Mock Room" },
+  { id: "results", label: "Insights" },
+  { id: "history", label: "History" },
+  { id: "mentor", label: "Mentor Review" },
 ];
+
+const historyStorageKey = "answerlyInterviewHistory";
+
+function readStoredHistory() {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  try {
+    const stored = window.localStorage.getItem(historyStorageKey);
+    const parsed = stored ? JSON.parse(stored) : [];
+    return Array.isArray(parsed) && parsed.length ? parsed : createMockHistorySessions();
+  } catch {
+    return createMockHistorySessions();
+  }
+}
 
 function createSession(settings) {
   const questions = buildQuestions(settings);
@@ -54,13 +74,37 @@ function App() {
   const [settings, setSettings] = useState(initialSettings);
   const [session, setSession] = useState(null);
   const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
+  const [history, setHistory] = useState(readStoredHistory);
 
   const previewQuestions = useMemo(() => buildQuestions(settings), [settings]);
   const playerProgress = useMemo(
     () => getPlayerProgress(playerProfile?.xp || 0),
     [playerProfile?.xp]
   );
-  const mentorLink = session ? `https://webchamp.demo/review/${session.mentorToken}` : "";
+  const mentorLink = session ? `https://answerly.demo/review/${session.mentorToken}` : "";
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(historyStorageKey, JSON.stringify(history));
+    } catch {
+      // Local storage can be unavailable in private or restricted environments.
+    }
+  }, [history]);
+
+  function storeHistorySession(nextSession, profile = playerProfile) {
+    const archivedSession = {
+      ...nextSession,
+      completedAt: nextSession.completedAt || new Date().toISOString(),
+      playerName: profile?.name || nextSession.playerName || "Candidate",
+    };
+
+    setHistory((current) => [
+      archivedSession,
+      ...current.filter((item) => item.id !== archivedSession.id),
+    ].slice(0, 20));
+
+    return archivedSession;
+  }
 
   function updateSetting(key, value) {
     setSettings((current) => ({ ...current, [key]: value }));
@@ -108,7 +152,7 @@ function App() {
     const demoAnswers = createDemoAnswers(nextSession.questions);
     const demoProfile = createPlayerProfile({
       name: "Maksym Demo",
-      email: "candidate@webchamp.demo",
+      email: "candidate@answerly.demo",
       track: "frontend",
       level: "Junior",
       goal: "Junior developer role",
@@ -123,7 +167,7 @@ function App() {
       achievements: ["question-scout", "first-run", "mentor-ready", "structured-answer"],
     });
     setSettings(demoSettings);
-    setSession({
+    const demoSession = {
       ...nextSession,
       answers: demoAnswers,
       rewarded: true,
@@ -133,7 +177,9 @@ function App() {
       },
       xp: 620,
       streak: 6,
-    });
+    };
+
+    setSession(storeHistorySession(demoSession, demoProfile));
     setActiveQuestionIndex(0);
     setPage("results");
   }
@@ -178,11 +224,17 @@ function App() {
       return;
     }
 
+    const completedSession = {
+      ...session,
+      rewarded: true,
+      completedAt: session.completedAt || new Date().toISOString(),
+    };
+
     if (!session.rewarded && playerProfile) {
       setPlayerProfile((current) => awardSessionXp(current, session.answers, true));
-      setSession((current) => ({ ...current, rewarded: true }));
     }
 
+    setSession(storeHistorySession(completedSession));
     setPage("results");
   }
 
@@ -238,6 +290,18 @@ function App() {
     setPage("landing");
   }
 
+  function openHistorySession(historySession) {
+    setSession(historySession);
+    setSettings(historySession.settings || initialSettings);
+    setActiveQuestionIndex(0);
+    setPage("results");
+  }
+
+  function practiceFromHistory(historySession) {
+    setSettings(historySession.settings || initialSettings);
+    setPage("setup");
+  }
+
   function goToPage(nextPage) {
     if ((nextPage === "interview" || nextPage === "results" || nextPage === "mentor") && !session) {
       setPage("setup");
@@ -251,9 +315,11 @@ function App() {
     <div className="app-shell">
       <header className="topbar">
         <button className="brand-button" type="button" onClick={() => setPage("landing")}>
-          <span className="brand-mark">WC</span>
-          <span>
-            <strong>WebChamp Interview Coach</strong>
+          <span className="brand-mark" aria-hidden="true">
+            <span className="brand-mark-initial">A</span>
+          </span>
+          <span className="brand-name">
+            <strong>Answerly</strong>
           </span>
         </button>
 
@@ -270,21 +336,36 @@ function App() {
           ))}
         </nav>
 
-        <div className="header-actions" aria-label="Account actions">
-          <button
-            className={page === "login" ? "nav-link auth-link active" : "nav-link auth-link"}
-            type="button"
-            onClick={() => setPage("login")}
-          >
-            Log in
-          </button>
-          <button
-            className={page === "register" ? "nav-link auth-link primary active" : "nav-link auth-link primary"}
-            type="button"
-            onClick={() => setPage("register")}
-          >
-            Register
-          </button>
+        <div className={playerProfile ? "header-actions has-account" : "header-actions"} aria-label="Account actions">
+          {playerProfile ? (
+            <button
+              className="account-button"
+              type="button"
+              onClick={() => setPage("setup")}
+              title={`Signed in as ${playerProfile.name}`}
+              aria-label={`Signed in as ${playerProfile.name}`}
+            >
+              <CircleUserRound size={24} strokeWidth={2.2} aria-hidden="true" />
+              <span className="account-status-dot" aria-hidden="true" />
+            </button>
+          ) : (
+            <>
+              <button
+                className={page === "login" ? "nav-link auth-link active" : "nav-link auth-link"}
+                type="button"
+                onClick={() => setPage("login")}
+              >
+                Log in
+              </button>
+              <button
+                className={page === "register" ? "nav-link auth-link primary active" : "nav-link auth-link primary"}
+                type="button"
+                onClick={() => setPage("register")}
+              >
+                Register
+              </button>
+            </>
+          )}
         </div>
       </header>
 
@@ -349,6 +430,15 @@ function App() {
             onUpdateDifficulty={updateDifficulty}
             onOpenMentor={() => setPage("mentor")}
             onPracticeAgain={() => setPage("setup")}
+          />
+        )}
+
+        {page === "history" && (
+          <HistoryPage
+            history={history}
+            onOpenSession={openHistorySession}
+            onPracticeAgain={practiceFromHistory}
+            onStartPractice={() => setPage("setup")}
           />
         )}
 

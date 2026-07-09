@@ -17,73 +17,64 @@ function LoginPage({ onLogin, onLoadDemo, onOpenRegister }) {
   function submitLogin(event) {
     event.preventDefault();
     onLogin({
-      email: form.email.trim() || "candidate@webchamp.demo",
+      email: form.email.trim() || "candidate@answerly.demo",
       password: form.password,
     });
   }
 
   return (
     <section className="page login-page">
-      <div className="login-layout">
-        <form className="panel login-form" onSubmit={submitLogin}>
-          <Badge tone="success">Welcome back</Badge>
-          <div>
-            <h1>Log in to WebChamp.</h1>
-            <p>
-              Authentication is mocked for the MVP. Continue with any email to restore a local practice profile.
-            </p>
-          </div>
+      <form className="login-card" onSubmit={submitLogin}>
+        <div className="login-brand-row">
+          <span className="login-brand-mark" aria-hidden="true">A</span>
+          <span>Answerly</span>
+        </div>
 
+        <div className="login-heading">
+          <Badge tone="success">Welcome back</Badge>
+          <h1>Log in to your account</h1>
+          <p>Continue to your interview practice workspace.</p>
+        </div>
+
+        <div className="login-fields">
           <label>
             <span>Email</span>
             <input
+              required
               type="email"
+              autoComplete="email"
               value={form.email}
               onChange={(event) => updateForm("email", event.target.value)}
-              placeholder="candidate@webchamp.demo"
+              placeholder="candidate@answerly.demo"
             />
           </label>
 
           <label>
             <span>Password</span>
             <input
+              required
+              minLength={6}
               type="password"
+              autoComplete="current-password"
               value={form.password}
               onChange={(event) => updateForm("password", event.target.value)}
-              placeholder="Any password for the MVP"
+              placeholder="Enter your password"
             />
           </label>
+        </div>
 
-          <div className="action-row">
-            <Button type="submit">Log in</Button>
-            <Button variant="secondary" onClick={onLoadDemo}>Load demo player</Button>
-          </div>
+        <div className="login-actions">
+          <Button type="submit" className="login-submit">Log in</Button>
+          <Button variant="secondary" className="login-submit" onClick={onLoadDemo}>
+            Load demo player
+          </Button>
+        </div>
 
-          <p className="auth-switch">
-            New to WebChamp?
-            <button type="button" onClick={onOpenRegister}>Create an account</button>
-          </p>
-        </form>
-
-        <aside className="panel login-side">
-          <Badge>Practice loop</Badge>
-          <h2>Pick up where your interview training starts.</h2>
-          <div className="login-step-list">
-            <div>
-              <strong>1</strong>
-              <span>Choose your track and rank</span>
-            </div>
-            <div>
-              <strong>2</strong>
-              <span>Run a timed mock interview</span>
-            </div>
-            <div>
-              <strong>3</strong>
-              <span>Review answers and mentor notes</span>
-            </div>
-          </div>
-        </aside>
-      </div>
+        <p className="auth-switch login-switch">
+          New to Answerly?
+          <button type="button" onClick={onOpenRegister}>Create an account</button>
+        </p>
+      </form>
     </section>
   );
 }

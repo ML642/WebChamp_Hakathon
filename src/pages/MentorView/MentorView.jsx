@@ -38,7 +38,7 @@ function MentorView({ session, playerProfile, playerProgress, mentorLink, onSave
     <section className="page mentor-page">
       <div className="mentor-hero panel">
         <div>
-          <Badge tone="success">Mentor view</Badge>
+          <Badge tone="success">Mentor Review</Badge>
           <h1>Review answers and leave targeted feedback.</h1>
           <p>
             This is a mocked private page for the hackathon demo. It proves the feedback loop without backend auth.

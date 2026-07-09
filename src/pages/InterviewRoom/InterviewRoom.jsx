@@ -79,7 +79,7 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
       <EmptyState
         title="No active session"
         text="Create a practice setup before opening the interview room."
-        actionLabel="Go to setup"
+        actionLabel="Go to practice setup"
         onAction={onBackToSetup}
       />
     );

@@ -8,7 +8,7 @@ function buildReviewPacket(session, mentorLink) {
   }
 
   return [
-    "WebChamp Interview Coach Review Packet",
+    "Answerly Review Packet",
     `Role: ${session.settings.track} / ${session.settings.level}`,
     `Answers: ${session.answers.length}/${session.questions.length}`,
     `Mentor link: ${mentorLink}`,
@@ -42,7 +42,7 @@ function ResultsDashboard({
       <EmptyState
         title="No results yet"
         text="Complete or load a demo session to see the results dashboard."
-        actionLabel="Back to setup"
+        actionLabel="Back to practice setup"
         onAction={onPracticeAgain}
       />
     );
@@ -229,7 +229,7 @@ function ResultsDashboard({
           </p>
           <input readOnly value={mentorLink} />
           <div className="stacked-actions">
-            <Button onClick={onOpenMentor}>Open mentor view</Button>
+            <Button onClick={onOpenMentor}>Open mentor review</Button>
             <Button variant="secondary" onClick={copyPacket}>Copy review packet</Button>
             <Button variant="ghost" onClick={onPracticeAgain}>Practice again</Button>
           </div>

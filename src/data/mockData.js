@@ -122,7 +122,7 @@ export const achievementCatalog = [
   {
     id: "question-scout",
     title: "Question Scout",
-    description: "Explore the curated question base.",
+    description: "Explore the curated question library.",
     xp: 50,
   },
 ];
@@ -843,7 +843,7 @@ export function createPlayerProfile(form) {
     id: `player-${Date.now()}`,
     name: displayName,
     nickname: form.nickname?.trim() || displayName,
-    email: form.email?.trim() || "candidate@webchamp.demo",
+    email: form.email?.trim() || "candidate@answerly.demo",
     goal: form.goal,
     studying: form.studying?.trim() || form.goal,
     track: form.track,
@@ -947,4 +947,48 @@ export function createDemoAnswers(questions) {
       index
     )
   );
+}
+
+export function createMockHistorySessions() {
+  const configs = [
+    {
+      id: "mock-history-frontend-01",
+      settings: { track: "frontend", level: "Junior", mode: "quick" },
+      playerName: "Maksym Demo",
+      completedAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
+      mentorToken: "mentor-fe-24",
+      xp: 620,
+      streak: 6,
+    },
+    {
+      id: "mock-history-backend-01",
+      settings: { track: "backend", level: "Junior", mode: "topic" },
+      playerName: "Maksym Demo",
+      completedAt: new Date(Date.now() - 1000 * 60 * 60 * 30).toISOString(),
+      mentorToken: "mentor-be-18",
+      xp: 540,
+      streak: 5,
+    },
+    {
+      id: "mock-history-ux-01",
+      settings: { track: "ux", level: "Trainee", mode: "soft" },
+      playerName: "Maksym Demo",
+      completedAt: new Date(Date.now() - 1000 * 60 * 60 * 72).toISOString(),
+      mentorToken: "mentor-ux-09",
+      xp: 410,
+      streak: 3,
+    },
+  ];
+
+  return configs.map((config) => {
+    const questions = buildQuestions(config.settings);
+
+    return {
+      ...config,
+      questions,
+      answers: createDemoAnswers(questions),
+      mentorComments: {},
+      rewarded: true,
+    };
+  });
 }

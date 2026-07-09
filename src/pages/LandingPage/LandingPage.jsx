@@ -21,8 +21,8 @@ function LandingPage({ onStart, onOpenQuestionBase, onLoadDemo }) {
           <Badge tone="success">Hackathon MVP</Badge>
           <h1>Practice interviews like a real call, then get feedback through one private link.</h1>
           <p>
-            WebChamp Interview Coach helps students and junior candidates move from passive reading to timed,
-            spoken practice with self-review and mentor feedback.
+            Answerly helps students and junior candidates move from passive reading to timed, spoken practice
+            with self-review and mentor feedback.
           </p>
           <div className="action-row">
             <Button onClick={onStart}>Build practice session</Button>
@@ -59,14 +59,14 @@ function LandingPage({ onStart, onOpenQuestionBase, onLoadDemo }) {
       <section className="panel question-base-panel">
         <div className="question-base-header">
           <div>
-            <Badge tone="success">Question Base</Badge>
+            <Badge tone="success">Question Library</Badge>
             <h2>Curated real-world interview-style questions.</h2>
             <p>
-              A lightweight mock database powers setup, interview practice, model answers, and mentor review.
+              A lightweight mock database powers practice setup, interview practice, model answers, and mentor review.
               It is intentionally content-first, so the MVP feels useful without backend complexity.
             </p>
             <div className="action-row">
-              <Button variant="secondary" onClick={onOpenQuestionBase}>Open full question base</Button>
+              <Button variant="secondary" onClick={onOpenQuestionBase}>Open question library</Button>
             </div>
           </div>
           <div className="question-base-stats">

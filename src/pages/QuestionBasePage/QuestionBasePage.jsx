@@ -95,8 +95,8 @@ function QuestionBasePage({ onStartPractice }) {
     <section className="page question-base-page">
       <div className="bank-hero panel">
         <div>
-          <Badge tone="success">Question Base</Badge>
-          <h1>Search the full interview question database.</h1>
+          <Badge tone="success">Question Library</Badge>
+          <h1>Search the full interview question library.</h1>
           <p>
             Curated questions for frontend, backend, UX, QA, and behavioral practice. Each item includes
             answer checkpoints and a concise model answer for fast review.
