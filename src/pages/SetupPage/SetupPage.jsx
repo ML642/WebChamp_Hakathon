@@ -1,6 +1,22 @@
-import { Badge, Button } from "../../components/Ui";
+import { motion } from "framer-motion";
+import { Badge, Button, Card3D } from "../../components/Ui";
 import { getMode, getTrainingQuests, getTrack, levels, modes, tracks } from "../../data/mockData";
 import "./SetupPage.css";
+
+const listVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, x: -20 },
+  show: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 300, damping: 20 } },
+};
 
 function SetupPage({ settings, questions, playerProfile, onUpdateSetting, onStart, onLoadDemo }) {
   const selectedTrack = getTrack(settings.track);
@@ -8,7 +24,13 @@ function SetupPage({ settings, questions, playerProfile, onUpdateSetting, onStar
   const trainingQuests = getTrainingQuests(playerProfile);
 
   return (
-    <section className="page setup-page">
+    <motion.section
+      className="page setup-page"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+    >
       <div className="section-heading">
         <Badge tone="success">Step 1</Badge>
         <h1>Build a focused interview run.</h1>
@@ -18,7 +40,12 @@ function SetupPage({ settings, questions, playerProfile, onUpdateSetting, onStar
       </div>
 
       <div className="setup-layout">
-        <div className="panel">
+        <motion.div
+          className="panel"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+        >
           <div className="panel-heading">
             <h2>Track</h2>
             <Badge>{selectedTrack.role}</Badge>
@@ -37,12 +64,17 @@ function SetupPage({ settings, questions, playerProfile, onUpdateSetting, onStar
               </button>
             ))}
           </div>
-        </div>
+        </motion.div>
 
-        <div className="panel">
+        <motion.div
+          className="panel"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3, delay: 0.2 }}
+        >
           <div className="panel-heading">
             <h2>Level and mode</h2>
-            <Badge>{selectedMode.title}</Badge>
+            <Badge tone="success">{selectedMode.title}</Badge>
           </div>
 
           <div className="segmented">
@@ -72,27 +104,44 @@ function SetupPage({ settings, questions, playerProfile, onUpdateSetting, onStar
             ))}
           </div>
 
-          <div className="action-row">
+          <div className="action-row" style={{ marginTop: "24px" }}>
             <Button onClick={onStart}>Start interview</Button>
-            <Button variant="secondary" onClick={onLoadDemo}>Load demo session</Button>
+            <Button variant="secondary" onClick={onLoadDemo}>
+              Load demo session
+            </Button>
           </div>
-        </div>
+        </motion.div>
 
-        <aside className="panel session-plan">
+        <motion.aside
+          className="panel session-plan"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3, delay: 0.3 }}
+        >
           <Badge tone="warning">Preview</Badge>
           <h2>{selectedTrack.role}</h2>
-          <p>Three curated real-world interview-style questions.</p>
-          <ol>
+          <p>Three curated real-world interview questions.</p>
+          <motion.ol
+            variants={listVariants}
+            initial="hidden"
+            animate="show"
+            key={settings.track + settings.mode}
+          >
             {questions.map((question) => (
-              <li key={question.id}>
+              <motion.li variants={itemVariants} key={question.id}>
                 <strong>{question.title}</strong>
                 <span>{question.prompt}</span>
-              </li>
+              </motion.li>
             ))}
-          </ol>
+          </motion.ol>
 
           {playerProfile ? (
-            <div className="setup-quest-panel">
+            <motion.div
+              className="setup-quest-panel"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
               <strong>{playerProfile.name}'s quest board</strong>
               <div className="setup-quest-list">
                 {trainingQuests.slice(0, 3).map((quest) => (
@@ -102,12 +151,13 @@ function SetupPage({ settings, questions, playerProfile, onUpdateSetting, onStar
                   </div>
                 ))}
               </div>
-            </div>
+            </motion.div>
           ) : null}
-        </aside>
+        </motion.aside>
       </div>
-    </section>
+    </motion.section>
   );
 }
 
 export default SetupPage;
+

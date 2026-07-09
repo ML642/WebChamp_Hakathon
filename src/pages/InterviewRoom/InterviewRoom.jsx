@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Badge, Button, EmptyState, MetricCard } from "../../components/Ui";
 import "./InterviewRoom.css";
 
@@ -92,8 +93,18 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
 
   const isLastQuestion = activeQuestionIndex === session.questions.length - 1;
 
+  // Visual cues for low time
+  const prepWarning = prepLeft <= 3 && phase === "prep";
+  const answerWarning = answerLeft <= 15 && phase === "recording";
+
   return (
-    <section className="page interview-page">
+    <motion.section
+      className="page interview-page"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+    >
       <div className="interview-header panel">
         <div>
           <div className="inline-row">
@@ -104,19 +115,37 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
           <p>{question.prompt}</p>
         </div>
         <div className="timer-grid">
-          <MetricCard label="Prep" value={formatTime(prepLeft)} />
-          <MetricCard label="Answer" value={formatTime(answerLeft)} />
+          <motion.div animate={prepWarning ? { scale: [1, 1.05, 1], color: "#ef4444" } : {}} transition={{ repeat: Infinity, duration: 0.5 }}>
+            <MetricCard label="Prep" value={formatTime(prepLeft)} />
+          </motion.div>
+          <motion.div animate={answerWarning ? { scale: [1, 1.05, 1], color: "#ef4444" } : {}} transition={{ repeat: Infinity, duration: 0.5 }}>
+            <MetricCard label="Answer" value={formatTime(answerLeft)} />
+          </motion.div>
         </div>
       </div>
 
       <div className="interview-layout">
         <div className="panel camera-panel">
-          <div className="mock-camera">
+          <div className={`mock-camera ${phase === "recording" ? "recording" : ""}`}>
             <div className={phase === "recording" ? "camera-status recording" : "camera-status"}>
-              {phase === "recording" ? "REC" : "Mock camera"}
+              {phase === "recording" ? "● REC" : "Mock camera"}
             </div>
-            <div className="avatar-circle">You</div>
-            <p>No real video is stored in this MVP. This tile simulates the call experience for the demo.</p>
+            
+            <div className="avatar-circle">
+              You
+            </div>
+
+            {phase === "recording" && (
+              <div className="soundwave" aria-hidden="true">
+                <div className="soundwave-bar" />
+                <div className="soundwave-bar" />
+                <div className="soundwave-bar" />
+                <div className="soundwave-bar" />
+                <div className="soundwave-bar" />
+              </div>
+            )}
+
+            <p style={{ marginTop: "16px" }}>No real video is stored in this MVP. This tile simulates the call experience.</p>
           </div>
 
           <label className="answer-editor">
@@ -130,13 +159,17 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
 
           <div className="action-row">
             {phase === "prep" && (
-              <Button variant="secondary" onClick={() => setPhase("ready")}>Skip prep</Button>
+              <Button variant="secondary" onClick={() => setPhase("ready")}>
+                Skip prep
+              </Button>
             )}
             {(phase === "ready" || phase === "prep") && (
               <Button onClick={startRecording}>Start mock recording</Button>
             )}
             {phase === "recording" && (
-              <Button variant="danger" onClick={saveCurrentAnswer}>Stop and save</Button>
+              <Button variant="danger" onClick={saveCurrentAnswer}>
+                Stop and save
+              </Button>
             )}
             {phase === "saved" && (
               <Button onClick={isLastQuestion ? onFinish : onNext}>
@@ -160,8 +193,9 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
           </div>
         </aside>
       </div>
-    </section>
+    </motion.section>
   );
 }
 
 export default InterviewRoom;
+

@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import { Badge, Button } from "../../components/Ui";
+import { motion, AnimatePresence } from "framer-motion";
+import { Badge, Button, Card3D } from "../../components/Ui";
 import { createPlayerProfile, levels, tracks } from "../../data/mockData";
 import "./RegistrationPage.css";
 
@@ -23,9 +24,27 @@ const registrationSteps = [
   },
 ];
 
+const stepVariants = {
+  initial: (direction) => ({
+    opacity: 0,
+    x: direction > 0 ? 50 : -50,
+  }),
+  animate: {
+    opacity: 1,
+    x: 0,
+    transition: { type: "spring", stiffness: 300, damping: 25 },
+  },
+  exit: (direction) => ({
+    opacity: 0,
+    x: direction > 0 ? -50 : 50,
+    transition: { duration: 0.2 },
+  }),
+};
+
 function RegistrationPage({ onRegister, onLoadDemo, onOpenLogin }) {
   const [form, setForm] = useState(initialForm);
   const [stepIndex, setStepIndex] = useState(0);
+  const [direction, setDirection] = useState(1);
   const formRef = useRef(null);
   const selectedTrack = tracks.find((track) => track.id === form.track);
   const isProfileStep = stepIndex === 1;
@@ -52,8 +71,13 @@ function RegistrationPage({ onRegister, onLoadDemo, onOpenLogin }) {
     if (!formRef.current?.reportValidity()) {
       return;
     }
-
+    setDirection(1);
     setStepIndex(1);
+  }
+
+  function goToPrevStep() {
+    setDirection(-1);
+    setStepIndex(0);
   }
 
   function submitRegistration(event) {
@@ -68,7 +92,13 @@ function RegistrationPage({ onRegister, onLoadDemo, onOpenLogin }) {
   }
 
   return (
-    <section className="page registration-page">
+    <motion.section
+      className="page registration-page"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       <div className="registration-layout">
         <form ref={formRef} className="panel registration-form" onSubmit={submitRegistration}>
           <div className="registration-heading">
@@ -84,7 +114,9 @@ function RegistrationPage({ onRegister, onLoadDemo, onOpenLogin }) {
                   "step-pill",
                   stepIndex === index ? "active" : "",
                   stepIndex > index ? "complete" : "",
-                ].join(" ").trim()}
+                ]
+                  .join(" ")
+                  .trim()}
                 key={step.title}
                 aria-current={stepIndex === index ? "step" : undefined}
               >
@@ -96,107 +128,141 @@ function RegistrationPage({ onRegister, onLoadDemo, onOpenLogin }) {
           </div>
 
           <div className="registration-progress" aria-hidden="true">
-            <div style={{ width: `${((stepIndex + 1) / registrationSteps.length) * 100}%` }} />
+            <motion.div
+              initial={{ width: "50%" }}
+              animate={{ width: isProfileStep ? "100%" : "50%" }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            />
           </div>
 
-          {!isProfileStep ? (
-            <div className="registration-step">
-              <div className="registration-step-heading">
-                <span>Step 1 of 2</span>
-                <h2>Account details</h2>
-              </div>
+          <div style={{ position: "relative", overflow: "hidden", minHeight: "310px" }}>
+            <AnimatePresence initial={false} custom={direction} mode="wait">
+              {!isProfileStep ? (
+                <motion.div
+                  key="step-1"
+                  custom={direction}
+                  variants={stepVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  className="registration-step"
+                >
+                  <div className="registration-step-heading">
+                    <span>Step 1 of 2</span>
+                    <h2>Account details</h2>
+                  </div>
 
-              <div className="form-grid">
-                <label>
-                  <span>Name</span>
-                  <input
-                    required
-                    autoComplete="name"
-                    value={form.name}
-                    onChange={(event) => updateForm("name", event.target.value)}
-                    placeholder="Maksym"
-                  />
-                </label>
+                  <div className="form-grid">
+                    <label>
+                      <span>Name</span>
+                      <input
+                        required
+                        autoComplete="name"
+                        value={form.name}
+                        onChange={(event) => updateForm("name", event.target.value)}
+                        placeholder="Maksym"
+                      />
+                    </label>
 
-                <label>
-                  <span>Email</span>
-                  <input
-                    required
-                    type="email"
-                    autoComplete="email"
-                    value={form.email}
-                    onChange={(event) => updateForm("email", event.target.value)}
-                    placeholder="candidate@answerly.demo"
-                  />
-                </label>
-              </div>
+                    <label>
+                      <span>Email</span>
+                      <input
+                        required
+                        type="email"
+                        autoComplete="email"
+                        value={form.email}
+                        onChange={(event) => updateForm("email", event.target.value)}
+                        placeholder="candidate@answerly.demo"
+                      />
+                    </label>
+                  </div>
 
-              <label>
-                <span>Password</span>
-                <input
-                  required
-                  minLength={6}
-                  type="password"
-                  autoComplete="new-password"
-                  value={form.password}
-                  onChange={(event) => updateForm("password", event.target.value)}
-                  placeholder="At least 6 characters"
-                />
-              </label>
-            </div>
-          ) : (
-            <div className="registration-step">
-              <div className="registration-step-heading">
-                <span>Step 2 of 2</span>
-                <h2>Learning profile</h2>
-              </div>
+                  <label>
+                    <span>Password</span>
+                    <input
+                      required
+                      minLength={6}
+                      type="password"
+                      autoComplete="new-password"
+                      value={form.password}
+                      onChange={(event) => updateForm("password", event.target.value)}
+                      placeholder="At least 6 characters"
+                    />
+                  </label>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="step-2"
+                  custom={direction}
+                  variants={stepVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  className="registration-step"
+                >
+                  <div className="registration-step-heading">
+                    <span>Step 2 of 2</span>
+                    <h2>Learning profile</h2>
+                  </div>
 
-              <div className="form-grid">
-                <label>
-                  <span>Level</span>
-                  <select value={form.level} onChange={(event) => updateForm("level", event.target.value)}>
-                    {levels.map((level) => (
-                      <option key={level} value={level}>{level}</option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  <span>Field</span>
-                  <select value={form.track} onChange={(event) => updateForm("track", event.target.value)}>
-                    {tracks.map((track) => (
-                      <option key={track.id} value={track.id}>{track.title}</option>
-                    ))}
-                  </select>
-                </label>
-              </div>
+                  <div className="form-grid">
+                    <label>
+                      <span>Level</span>
+                      <select value={form.level} onChange={(event) => updateForm("level", event.target.value)}>
+                        {levels.map((level) => (
+                          <option key={level} value={level}>
+                            {level}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label>
+                      <span>Field</span>
+                      <select value={form.track} onChange={(event) => updateForm("track", event.target.value)}>
+                        {tracks.map((track) => (
+                          <option key={track.id} value={track.id}>
+                            {track.title}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
 
-              <label>
-                <span>What are you studying?</span>
-                <textarea
-                  value={form.studying}
-                  onChange={(event) => updateForm("studying", event.target.value)}
-                  placeholder="React fundamentals, REST APIs, algorithms, UI/UX portfolio..."
-                />
-              </label>
-            </div>
-          )}
+                  <label>
+                    <span>What are you studying?</span>
+                    <textarea
+                      value={form.studying}
+                      onChange={(event) => updateForm("studying", event.target.value)}
+                      placeholder="React fundamentals, REST APIs, algorithms, UI/UX portfolio..."
+                    />
+                  </label>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           <div className="action-row">
             {isProfileStep ? (
-              <Button variant="secondary" onClick={() => setStepIndex(0)}>Back</Button>
+              <Button variant="secondary" onClick={goToPrevStep}>
+                Back
+              </Button>
             ) : null}
             <Button type="submit">{isProfileStep ? "Create account" : "Continue"}</Button>
-            <Button variant="secondary" onClick={onLoadDemo}>Load demo player</Button>
+            <Button variant="secondary" onClick={onLoadDemo}>
+              Load demo player
+            </Button>
           </div>
 
           <p className="auth-switch">
             Already have an account?
-            <button type="button" onClick={onOpenLogin}>Log in</button>
+            <button type="button" onClick={onOpenLogin}>
+              Log in
+            </button>
           </p>
         </form>
 
-        <aside className="panel registration-summary">
-          <Badge>Profile setup</Badge>
+        <Card3D className="registration-summary">
+          <Badge tone="success">Profile Setup</Badge>
           <h2>One account, one practice path.</h2>
           <p>
             Answerly uses this information to prepare relevant interview questions and keep your practice
@@ -225,9 +291,9 @@ function RegistrationPage({ onRegister, onLoadDemo, onOpenLogin }) {
               <strong>{form.studying || "Add your focus"}</strong>
             </div>
           </div>
-        </aside>
+        </Card3D>
       </div>
-    </section>
+    </motion.section>
   );
 }
 

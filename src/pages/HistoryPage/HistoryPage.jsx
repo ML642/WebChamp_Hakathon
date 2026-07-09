@@ -1,7 +1,23 @@
 import { useMemo, useState } from "react";
-import { Badge, Button, MetricCard } from "../../components/Ui";
+import { motion, AnimatePresence } from "framer-motion";
+import { Badge, Button, MetricCard, Card3D } from "../../components/Ui";
 import { getMode, getTrack } from "../../data/mockData";
 import "./HistoryPage.css";
+
+const listVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 22 } },
+};
 
 function formatDate(value) {
   if (!value) {
@@ -93,19 +109,30 @@ function HistoryPage({ history, onOpenSession, onPracticeAgain, onStartPractice 
 
   if (!history.length) {
     return (
-      <section className="page history-page">
+      <motion.section
+        className="page history-page"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      >
         <div className="panel history-empty">
           <Badge tone="warning">History</Badge>
           <h1>No interview history yet</h1>
           <p>Complete a mock interview to store your first history entry.</p>
           <Button onClick={onStartPractice}>Start practice</Button>
         </div>
-      </section>
+      </motion.section>
     );
   }
 
   return (
-    <section className="page history-page">
+    <motion.section
+      className="page history-page"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       <div className="section-heading">
         <Badge tone="success">History</Badge>
         <h1>Your mock interview archive.</h1>
@@ -140,35 +167,37 @@ function HistoryPage({ history, onOpenSession, onPracticeAgain, onStartPractice 
       </div>
 
       <div className="history-workspace">
-        <aside className="panel history-video-panel">
-          <Badge tone="warning">Mock video</Badge>
-          <div className="history-video-frame">
-            <div className="history-video-topbar">
-              <span />
-              <strong>Saved recording</strong>
+        <aside className="history-video-panel">
+          <Card3D className="history-video-panel-inner" style={{ background: "rgba(18, 22, 38, 0.6)" }}>
+            <Badge tone="warning">Mock video</Badge>
+            <div className="history-video-frame" style={{ marginTop: "12px" }}>
+              <div className="history-video-topbar">
+                <span />
+                <strong>Saved recording</strong>
+              </div>
+              <div className="history-video-avatar">{getInitials(selectedSession?.playerName)}</div>
+              <p>{selectedSession?.playerName || "Candidate"}</p>
             </div>
-            <div className="history-video-avatar">
-              {getInitials(selectedSession?.playerName)}
-            </div>
-            <p>{selectedSession?.playerName || "Candidate"}</p>
-          </div>
 
-          <div className="history-video-meta">
-            <div>
-              <span>Interview</span>
-              <strong>{selectedTrack?.role}</strong>
+            <div className="history-video-meta" style={{ marginTop: "16px", marginBottom: "16px" }}>
+              <div>
+                <span>Interview</span>
+                <strong>{selectedTrack?.role}</strong>
+              </div>
+              <div>
+                <span>Date</span>
+                <strong>{formatDate(selectedSession?.completedAt)}</strong>
+              </div>
+              <div>
+                <span>Average score</span>
+                <strong>{getAverageScore(selectedSession)}%</strong>
+              </div>
             </div>
-            <div>
-              <span>Date</span>
-              <strong>{formatDate(selectedSession?.completedAt)}</strong>
-            </div>
-            <div>
-              <span>Average score</span>
-              <strong>{getAverageScore(selectedSession)}%</strong>
-            </div>
-          </div>
 
-          <Button onClick={() => onOpenSession(selectedSession)}>Open full insights</Button>
+            <Button style={{ width: "100%" }} onClick={() => onOpenSession(selectedSession)}>
+              Open full insights
+            </Button>
+          </Card3D>
         </aside>
 
         <div className="history-results">
@@ -179,7 +208,13 @@ function HistoryPage({ history, onOpenSession, onPracticeAgain, onStartPractice 
             </div>
 
             {visibleHistory.length ? (
-              <div className="history-list">
+              <motion.div
+                className="history-list"
+                variants={listVariants}
+                initial="hidden"
+                animate="show"
+                key={query + sortBy}
+              >
                 {visibleHistory.map((item) => {
                   const track = getTrack(item.settings.track);
                   const mode = getMode(item.settings.mode);
@@ -188,7 +223,12 @@ function HistoryPage({ history, onOpenSession, onPracticeAgain, onStartPractice 
                   const active = selectedSession?.id === item.id;
 
                   return (
-                    <article className={active ? "history-card active" : "history-card"} key={item.id}>
+                    <motion.article
+                      className={active ? "history-card active" : "history-card"}
+                      variants={itemVariants}
+                      key={item.id}
+                      layout
+                    >
                       <button
                         className="history-card-select"
                         type="button"
@@ -197,7 +237,9 @@ function HistoryPage({ history, onOpenSession, onPracticeAgain, onStartPractice 
                         <div>
                           <Badge>{mode.title}</Badge>
                           <h3>{track.role}</h3>
-                          <p>{item.playerName || "Candidate"} · {formatDate(item.completedAt)}</p>
+                          <p>
+                            {item.playerName || "Candidate"} · {formatDate(item.completedAt)}
+                          </p>
                         </div>
                         <div className="history-card-score">
                           <strong>{averageScore}%</strong>
@@ -207,12 +249,14 @@ function HistoryPage({ history, onOpenSession, onPracticeAgain, onStartPractice 
 
                       <div className="history-card-actions">
                         <Button onClick={() => onOpenSession(item)}>Insights</Button>
-                        <Button variant="secondary" onClick={() => onPracticeAgain(item)}>Practice again</Button>
+                        <Button variant="secondary" onClick={() => onPracticeAgain(item)}>
+                          Practice again
+                        </Button>
                       </div>
-                    </article>
+                    </motion.article>
                   );
                 })}
-              </div>
+              </motion.div>
             ) : (
               <div className="panel history-no-results">
                 <h2>No matching interviews</h2>
@@ -221,49 +265,60 @@ function HistoryPage({ history, onOpenSession, onPracticeAgain, onStartPractice 
             )}
           </div>
 
-          {selectedSession ? (
-            <section className="panel history-detail-panel">
-              <div className="history-detail-heading">
-                <div>
-                  <Badge tone="success">{selectedMode?.title}</Badge>
-                  <h2>{selectedTrack?.title} interview details</h2>
-                  <p>{selectedSession.settings.level} · {formatDate(selectedSession.completedAt)}</p>
+          <AnimatePresence mode="wait">
+            {selectedSession ? (
+              <motion.section
+                className="panel history-detail-panel"
+                key={selectedSession.id}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="history-detail-heading">
+                  <div>
+                    <Badge tone="success">{selectedMode?.title}</Badge>
+                    <h2>{selectedTrack?.title} interview details</h2>
+                    <p>
+                      {selectedSession.settings.level} · {formatDate(selectedSession.completedAt)}
+                    </p>
+                  </div>
+                  <MetricCard label="Score" value={`${getAverageScore(selectedSession)}%`} />
                 </div>
-                <MetricCard label="Score" value={`${getAverageScore(selectedSession)}%`} />
-              </div>
 
-              <div className="history-question-list">
-                {selectedSession.questions.map((question, index) => {
-                  const answer = selectedSession.answers?.find((item) => item.questionId === question.id);
+                <div className="history-question-list">
+                  {selectedSession.questions.map((question, index) => {
+                    const answer = selectedSession.answers?.find((item) => item.questionId === question.id);
 
-                  return (
-                    <article className="history-question-card" key={question.id}>
-                      <div className="history-question-heading">
-                        <div>
-                          <Badge>Question {index + 1}</Badge>
-                          <h3>{question.title}</h3>
+                    return (
+                      <article className="history-question-card" key={question.id}>
+                        <div className="history-question-heading">
+                          <div>
+                            <Badge>Question {index + 1}</Badge>
+                            <h3>{question.title}</h3>
+                          </div>
+                          <strong>{answer ? `${answer.score}%` : "Missing"}</strong>
                         </div>
-                        <strong>{answer ? `${answer.score}%` : "Missing"}</strong>
-                      </div>
-                      <p>{question.prompt}</p>
-                      <div className="history-question-answer">
-                        <span>Transcript</span>
-                        <p>{answer?.transcript || "No transcript saved for this question."}</p>
-                      </div>
-                      <div className="history-question-meta">
-                        <span>{question.topic}</span>
-                        <span>{answer ? `${answer.duration}s` : "--"}</span>
-                        <span>{answer ? `${answer.wpm} wpm` : "--"}</span>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            </section>
-          ) : null}
+                        <p>{question.prompt}</p>
+                        <div className="history-question-answer">
+                          <span>Transcript</span>
+                          <p>{answer?.transcript || "No transcript saved for this question."}</p>
+                        </div>
+                        <div className="history-question-meta">
+                          <span>{question.topic}</span>
+                          <span>{answer ? `${answer.duration}s` : "--"}</span>
+                          <span>{answer ? `${answer.wpm} wpm` : "--"}</span>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              </motion.section>
+            ) : null}
+          </AnimatePresence>
         </div>
       </div>
-    </section>
+    </motion.section>
   );
 }
 

@@ -1,9 +1,32 @@
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Badge, Button, EmptyState, MetricCard } from "../../components/Ui";
 import "./MentorView.css";
 
+const listVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 20 } },
+};
+
 function MentorCommentBox({ questionId, initialValue, onSave }) {
   const [value, setValue] = useState(initialValue || "");
+  const [saved, setSaved] = useState(false);
+
+  function handleSave() {
+    onSave(questionId, value);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
 
   return (
     <div className="mentor-comment">
@@ -15,7 +38,21 @@ function MentorCommentBox({ questionId, initialValue, onSave }) {
           placeholder="Leave one precise next step for this answer."
         />
       </label>
-      <Button onClick={() => onSave(questionId, value)}>Save comment</Button>
+      <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+        <Button onClick={handleSave}>Save comment</Button>
+        <AnimatePresence>
+          {saved && (
+            <motion.span
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0 }}
+              style={{ color: "var(--success)", fontSize: "13px", fontWeight: "600" }}
+            >
+              Saved ✓
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
@@ -35,7 +72,13 @@ function MentorView({ session, playerProfile, playerProgress, mentorLink, onSave
   const commentCount = Object.values(session.mentorComments).filter(Boolean).length;
 
   return (
-    <section className="page mentor-page">
+    <motion.section
+      className="page mentor-page"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       <div className="mentor-hero panel">
         <div>
           <Badge tone="success">Mentor Review</Badge>
@@ -53,7 +96,12 @@ function MentorView({ session, playerProfile, playerProgress, mentorLink, onSave
       </div>
 
       {playerProfile ? (
-        <div className="panel mentor-player-panel">
+        <motion.div
+          className="panel mentor-player-panel"
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+        >
           <div>
             <Badge tone="warning">Candidate profile</Badge>
             <h2>{playerProfile.name}</h2>
@@ -64,15 +112,25 @@ function MentorView({ session, playerProfile, playerProgress, mentorLink, onSave
             <strong>{playerProgress.current.title}</strong>
             <small>{playerProfile.xp} XP total</small>
           </div>
-        </div>
+        </motion.div>
       ) : null}
 
-      <div className="mentor-list">
+      <motion.div
+        className="mentor-list"
+        variants={listVariants}
+        initial="hidden"
+        animate="show"
+      >
         {session.questions.map((question, index) => {
           const answer = session.answers.find((item) => item.questionId === question.id);
 
           return (
-            <article className="panel mentor-card" key={question.id}>
+            <motion.article
+              className="panel mentor-card"
+              variants={itemVariants}
+              key={question.id}
+              layout
+            >
               <div className="video-placeholder">
                 <span>{answer?.videoLabel || "No mock video"}</span>
               </div>
@@ -105,17 +163,22 @@ function MentorView({ session, playerProfile, playerProgress, mentorLink, onSave
                 initialValue={session.mentorComments[question.id]}
                 onSave={onSaveComment}
               />
-            </article>
+            </motion.article>
           );
         })}
-      </div>
+      </motion.div>
 
       <div className="bottom-actions">
-        <Button variant="secondary" onClick={onBackToResults}>Back to results</Button>
-        <Button variant="ghost" onClick={onReset}>Reset demo</Button>
+        <Button variant="secondary" onClick={onBackToResults}>
+          Back to results
+        </Button>
+        <Button variant="ghost" onClick={onReset}>
+          Reset demo
+        </Button>
       </div>
-    </section>
+    </motion.section>
   );
 }
 
 export default MentorView;
+

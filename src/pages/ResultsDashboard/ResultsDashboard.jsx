@@ -1,6 +1,22 @@
-import { Badge, Button, EmptyState, MetricCard } from "../../components/Ui";
+import { motion, AnimatePresence } from "framer-motion";
+import { Badge, Button, EmptyState, MetricCard, Card3D } from "../../components/Ui";
 import { achievementCatalog, getLevelLadder, getTrainingQuests } from "../../data/mockData";
 import "./ResultsDashboard.css";
+
+const listVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 20 } },
+};
 
 function buildReviewPacket(session, mentorLink) {
   if (!session) {
@@ -67,11 +83,17 @@ function ResultsDashboard({
   }
 
   return (
-    <section className="page results-page">
+    <motion.section
+      className="page results-page"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       <div className="dashboard-hero panel">
         <div>
           <Badge tone="success">Step 3</Badge>
-          <h1>Review the session before sharing it.</h1>
+          <h1>Review the session before sharing.</h1>
           <p>
             The dashboard shows mock recordings, transcripts, model answers, self-review, and a private mentor link.
           </p>
@@ -84,7 +106,12 @@ function ResultsDashboard({
       </div>
 
       {playerProfile ? (
-        <section className="panel player-progress-panel">
+        <motion.section
+          className="panel player-progress-panel"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+        >
           <div className="player-progress-main">
             <div>
               <Badge tone="success">Player level</Badge>
@@ -95,21 +122,35 @@ function ResultsDashboard({
               <span>Level {playerProgress.current.level}</span>
               <strong>{playerProgress.current.title}</strong>
               <div className="results-level-bar">
-                <div style={{ width: `${playerProgress.progress}%` }} />
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${playerProgress.progress}%` }}
+                  transition={{ duration: 1, ease: "easeOut" }}
+                />
               </div>
               <small>{playerProgress.xpToNext} XP to {playerProgress.next?.title || "max level"}</small>
             </div>
           </div>
 
-          <div className="achievement-row">
+          <motion.div
+            className="achievement-row"
+            variants={listVariants}
+            initial="hidden"
+            animate="show"
+          >
             {unlockedAchievements.map((achievement) => (
-              <article className="achievement-card" key={achievement.id}>
+              <motion.article
+                className="achievement-card"
+                variants={itemVariants}
+                key={achievement.id}
+                whileHover={{ y: -3, borderColor: "rgba(168, 85, 247, 0.4)" }}
+              >
                 <strong>{achievement.title}</strong>
                 <span>{achievement.description}</span>
                 <small>+{achievement.xp} XP</small>
-              </article>
+              </motion.article>
             ))}
-          </div>
+          </motion.div>
 
           <div className="quest-and-ladder-grid">
             <div className="quest-board">
@@ -146,16 +187,26 @@ function ResultsDashboard({
               </div>
             </div>
           </div>
-        </section>
+        </motion.section>
       ) : null}
 
       <div className="results-layout">
-        <div className="answer-list">
+        <motion.div
+          className="answer-list"
+          variants={listVariants}
+          initial="hidden"
+          animate="show"
+        >
           {session.questions.map((question, index) => {
             const answer = session.answers.find((item) => item.questionId === question.id);
 
             return (
-              <article className="panel answer-card" key={question.id}>
+              <motion.article
+                className="panel answer-card"
+                variants={itemVariants}
+                key={question.id}
+                layout
+              >
                 <div className="answer-media">
                   <div className="video-placeholder">
                     <span>{answer?.videoLabel || "No mock video"}</span>
@@ -185,20 +236,22 @@ function ResultsDashboard({
 
                   {answer && (
                     <div className="self-review">
-                      {[
-                        ["topic", "Understood topic"],
-                        ["structure", "Structured answer"],
-                        ["timing", "Finished on time"],
-                      ].map(([key, label]) => (
-                        <label key={key}>
-                          <input
-                            type="checkbox"
-                            checked={Boolean(answer.checklist[key])}
-                            onChange={() => onUpdateChecklist(question.id, key)}
-                          />
-                          {label}
-                        </label>
-                      ))}
+                      <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+                        {[
+                          ["topic", "Understood topic"],
+                          ["structure", "Structured answer"],
+                          ["timing", "Finished on time"],
+                        ].map(([key, label]) => (
+                          <label key={key}>
+                            <input
+                              type="checkbox"
+                              checked={Boolean(answer.checklist[key])}
+                              onChange={() => onUpdateChecklist(question.id, key)}
+                            />
+                            {label}
+                          </label>
+                        ))}
+                      </div>
 
                       <div className="difficulty-row">
                         {["easy", "medium", "hard"].map((difficulty) => (
@@ -216,10 +269,10 @@ function ResultsDashboard({
                     </div>
                   )}
                 </div>
-              </article>
+              </motion.article>
             );
           })}
-        </div>
+        </motion.div>
 
         <aside className="panel share-panel">
           <Badge tone="warning">Step 4</Badge>
@@ -233,7 +286,7 @@ function ResultsDashboard({
             <Button variant="secondary" onClick={copyPacket}>Copy review packet</Button>
             <Button variant="ghost" onClick={onPracticeAgain}>Practice again</Button>
           </div>
-          <div className="demo-note">
+          <div className="demo-note" style={{ marginTop: "24px" }}>
             <strong>Demo architecture</strong>
             <p>
               Frontend state holds the session, answers, and mentor comments. Production would replace this with
@@ -242,7 +295,7 @@ function ResultsDashboard({
           </div>
         </aside>
       </div>
-    </section>
+    </motion.section>
   );
 }
 
