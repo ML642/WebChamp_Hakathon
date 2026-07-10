@@ -1,5 +1,5 @@
-import { motion, AnimatePresence } from "framer-motion";
-import { Badge, Button, EmptyState, MetricCard, Card3D } from "../../components/Ui";
+import { motion } from "framer-motion";
+import { Badge, Button, EmptyState, MetricCard } from "../../components/Ui";
 import { achievementCatalog, getLevelLadder, getTrainingQuests } from "../../data/mockData";
 import "./ResultsDashboard.css";
 
@@ -233,6 +233,40 @@ function ResultsDashboard({
                       <p>{question.model}</p>
                     </div>
                   </div>
+
+                  {answer?.aiFeedback && (
+                    <div className="ai-feedback" style={{ marginTop: "24px", padding: "16px", backgroundColor: "rgba(168, 85, 247, 0.1)", borderRadius: "12px", border: "1px solid rgba(168, 85, 247, 0.3)" }}>
+                      <h3 style={{ marginTop: 0, marginBottom: "16px", color: "#a855f7", display: "flex", alignItems: "center", gap: "8px", fontSize: "1.1rem" }}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>
+                        AI Analysis
+                      </h3>
+                      
+                      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                        <div>
+                          <strong style={{ display: "block", marginBottom: "4px", fontSize: "0.9rem" }}>How to improve:</strong>
+                          <p style={{ margin: 0, fontSize: "0.95rem", lineHeight: "1.5" }}>{answer.aiFeedback.improvement}</p>
+                        </div>
+                        
+                        <div>
+                          <strong style={{ display: "block", marginBottom: "4px", fontSize: "0.9rem" }}>Accuracy check:</strong>
+                          <p style={{ margin: 0, fontSize: "0.95rem", lineHeight: "1.5", color: answer.aiFeedback.inaccuracies.includes("No major") ? "inherit" : "#ef4444" }}>
+                            {answer.aiFeedback.inaccuracies}
+                          </p>
+                        </div>
+
+                        {answer.aiFeedback.topicsToReview?.length > 0 && (
+                          <div>
+                            <strong style={{ display: "block", marginBottom: "6px", fontSize: "0.9rem" }}>Topics to review:</strong>
+                            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                              {answer.aiFeedback.topicsToReview.map(topic => (
+                                <Badge key={topic} tone="warning">{topic}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {answer && (
                     <div className="self-review">

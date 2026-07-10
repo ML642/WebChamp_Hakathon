@@ -2,14 +2,14 @@ export const tracks = [
   {
     id: "frontend",
     title: "Frontend",
-    role: "Junior Frontend Developer",
+    role: "Frontend Developer",
     summary: "React, JavaScript, UI states, accessibility, browser APIs.",
     skills: ["React", "JavaScript", "CSS", "Accessibility"],
   },
   {
     id: "backend",
     title: "Backend Python",
-    role: "Junior Backend Developer",
+    role: "Backend Developer",
     summary: "REST APIs, database basics, auth, background processing.",
     skills: ["Python", "REST", "SQL", "Auth"],
   },
@@ -23,7 +23,7 @@ export const tracks = [
   {
     id: "qa",
     title: "QA",
-    role: "Junior QA Engineer",
+    role: "QA Engineer",
     summary: "Test planning, bug reports, regression risk, automation scope.",
     skills: ["Testing", "Bugs", "Risk", "Automation"],
   },
@@ -895,8 +895,15 @@ export function getMode(modeId) {
 }
 
 export function buildQuestions(settings) {
-  const trackQuestions = questionBank.filter((question) => question.track === settings.track);
-  const softQuestion = questionBank.find((question) => question.track === "soft");
+  const allTrackQuestions = questionBank.filter((question) => question.track === settings.track);
+  const trackQuestions = [...allTrackQuestions].sort((a, b) => {
+    if (a.level === settings.level && b.level !== settings.level) return -1;
+    if (a.level !== settings.level && b.level === settings.level) return 1;
+    return 0;
+  });
+  
+  const softQuestion = questionBank.find((question) => question.track === "soft" && question.level === settings.level) 
+    || questionBank.find((question) => question.track === "soft");
 
   if (settings.mode === "soft") {
     return [trackQuestions[0], softQuestion, trackQuestions[1]].filter(Boolean).slice(0, 3);
@@ -920,6 +927,12 @@ export function createMockAnswer(question, draft, index = 0) {
   const wpm = Math.round((words / duration) * 60);
   const score = Math.min(96, 58 + Math.round(words / 3) + (duration <= 120 ? 12 : 0));
 
+  const aiFeedback = {
+    improvement: "Consider using the STAR method more explicitly to provide a clearer structure. Adding a concrete example from your past projects would also make the answer stronger.",
+    inaccuracies: score < 85 ? "You missed mentioning some critical edge cases, such as error handling or performance constraints." : "No major inaccuracies detected in the technical aspects.",
+    topicsToReview: score < 90 ? [question.topic, "Structuring Answers"] : [],
+  };
+
   return {
     questionId: question.id,
     transcript,
@@ -936,6 +949,7 @@ export function createMockAnswer(question, draft, index = 0) {
     },
     difficulty: "medium",
     repeatIn: "3 days",
+    aiFeedback,
   };
 }
 

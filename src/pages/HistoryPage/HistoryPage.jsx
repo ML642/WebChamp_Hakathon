@@ -236,7 +236,7 @@ function HistoryPage({ history, onOpenSession, onPracticeAgain, onStartPractice 
                       >
                         <div>
                           <Badge>{mode.title}</Badge>
-                          <h3>{track.role}</h3>
+                          <h3>{item.settings.level} {track.role}</h3>
                           <p>
                             {item.playerName || "Candidate"} · {formatDate(item.completedAt)}
                           </p>
@@ -304,7 +304,29 @@ function HistoryPage({ history, onOpenSession, onPracticeAgain, onStartPractice 
                           <span>Transcript</span>
                           <p>{answer?.transcript || "No transcript saved for this question."}</p>
                         </div>
-                        <div className="history-question-meta">
+                        
+                        {answer?.aiFeedback && (
+                          <div className="ai-feedback" style={{ marginTop: "16px", padding: "12px", backgroundColor: "rgba(168, 85, 247, 0.05)", borderRadius: "8px", border: "1px solid rgba(168, 85, 247, 0.2)" }}>
+                            <h4 style={{ margin: "0 0 8px 0", color: "#a855f7", display: "flex", alignItems: "center", gap: "6px", fontSize: "0.95rem" }}>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>
+                              AI Analysis
+                            </h4>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                              <div>
+                                <strong style={{ display: "block", fontSize: "0.85rem", marginBottom: "2px" }}>How to improve:</strong>
+                                <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--muted)" }}>{answer.aiFeedback.improvement}</p>
+                              </div>
+                              <div>
+                                <strong style={{ display: "block", fontSize: "0.85rem", marginBottom: "2px" }}>Accuracy check:</strong>
+                                <p style={{ margin: 0, fontSize: "0.85rem", color: answer.aiFeedback.inaccuracies.includes("No major") ? "var(--muted)" : "#ef4444" }}>
+                                  {answer.aiFeedback.inaccuracies}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="history-question-meta" style={{ marginTop: "16px" }}>
                           <span>{question.topic}</span>
                           <span>{answer ? `${answer.duration}s` : "--"}</span>
                           <span>{answer ? `${answer.wpm} wpm` : "--"}</span>

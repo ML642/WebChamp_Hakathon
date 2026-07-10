@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import { motion } from "framer-motion";
 import { Badge, Button, EmptyState, MetricCard } from "../../components/Ui";
 import "./InterviewRoom.css";
 
@@ -17,6 +17,8 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
   const [prepLeft, setPrepLeft] = useState(prepSeconds);
   const [answerLeft, setAnswerLeft] = useState(answerSeconds);
   const [draft, setDraft] = useState("");
+  const [audioLevel, setAudioLevel] = useState(0);
+  const videoRef = useRef(null);
 
   const question = session?.questions[activeQuestionIndex];
   const existingAnswer = session?.answers.find((answer) => answer.questionId === question?.id);
@@ -30,6 +32,57 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
 
     return `Question ${activeQuestionIndex + 1} of ${session.questions.length}`;
   }, [activeQuestionIndex, session]);
+
+  useEffect(() => {
+    let mediaStream = null;
+    let audioContext = null;
+    let analyser = null;
+    let dataArray = null;
+    let animationId = null;
+    
+    async function setupCamera() {
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream;
+        }
+
+        const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextConstructor) {
+          audioContext = new AudioContextConstructor();
+          const source = audioContext.createMediaStreamSource(mediaStream);
+          analyser = audioContext.createAnalyser();
+          analyser.fftSize = 256;
+          source.connect(analyser);
+          dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+          const updateAudioLevel = () => {
+            analyser.getByteFrequencyData(dataArray);
+            let sum = 0;
+            for (let i = 0; i < dataArray.length; i++) {
+              sum += dataArray[i];
+            }
+            const average = sum / dataArray.length;
+            setAudioLevel(Math.min(1, average / 50)); 
+            animationId = requestAnimationFrame(updateAudioLevel);
+          };
+          updateAudioLevel();
+        }
+      } catch (err) {
+        console.warn("Camera/Mic access denied or unavailable", err);
+      }
+    }
+    
+    setupCamera();
+    
+    return () => {
+      if (animationId) cancelAnimationFrame(animationId);
+      if (audioContext && audioContext.state !== 'closed') audioContext.close();
+      if (mediaStream) {
+        mediaStream.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, []);
 
   useEffect(() => {
     setPhase(hasExistingAnswer ? "saved" : "prep");
@@ -74,6 +127,23 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
     const timer = window.setTimeout(() => setAnswerLeft((value) => value - 1), 1000);
     return () => window.clearTimeout(timer);
   }, [phase, answerLeft, saveCurrentAnswer]);
+
+  useEffect(() => {
+    if (phase !== "recording") return;
+
+    const mockSpeech = (question?.model || "I would structure my answer by giving a clear example.").split(" ");
+    let wordIndex = 0;
+    
+    const interval = window.setInterval(() => {
+      if (wordIndex < mockSpeech.length) {
+        const nextWord = mockSpeech[wordIndex];
+        setDraft(prev => (prev ? prev + " " : "") + nextWord);
+        wordIndex++;
+      }
+    }, 600);
+    
+    return () => window.clearInterval(interval);
+  }, [phase, question]);
 
   if (!session || !question) {
     return (
@@ -127,25 +197,33 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
       <div className="interview-layout">
         <div className="panel camera-panel">
           <div className={`mock-camera ${phase === "recording" ? "recording" : ""}`}>
-            <div className={phase === "recording" ? "camera-status recording" : "camera-status"}>
-              {phase === "recording" ? "● REC" : "Mock camera"}
-            </div>
-            
-            <div className="avatar-circle">
-              You
+            <video 
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="camera-video-feed"
+              style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0, zIndex: 0, borderRadius: "inherit" }}
+            />
+            <div className={phase === "recording" ? "camera-status recording" : "camera-status"} style={{ zIndex: 1 }}>
+              {phase === "recording" ? "● REC" : "Camera active"}
             </div>
 
             {phase === "recording" && (
-              <div className="soundwave" aria-hidden="true">
-                <div className="soundwave-bar" />
-                <div className="soundwave-bar" />
-                <div className="soundwave-bar" />
-                <div className="soundwave-bar" />
-                <div className="soundwave-bar" />
+              <div className="soundwave" aria-hidden="true" style={{ zIndex: 1 }}>
+                {[0.5, 0.8, 1.0, 0.9, 0.6].map((multiplier, i) => (
+                  <div 
+                    key={i} 
+                    className="soundwave-bar" 
+                    style={{ 
+                      height: `${Math.max(6, Math.min(24, 6 + audioLevel * multiplier * 24))}px`,
+                      animation: "none",
+                      backgroundColor: audioLevel > 0.1 ? "var(--danger)" : "rgba(255,255,255,0.8)"
+                    }} 
+                  />
+                ))}
               </div>
             )}
-
-            <p style={{ marginTop: "16px" }}>No real video is stored in this MVP. This tile simulates the call experience.</p>
           </div>
 
           <label className="answer-editor">

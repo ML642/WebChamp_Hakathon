@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Badge, Button, Card3D } from "../../components/Ui";
+import { Badge, Button } from "../../components/Ui";
 import { getMode, getTrainingQuests, getTrack, levels, modes, tracks } from "../../data/mockData";
 import "./SetupPage.css";
 
@@ -119,13 +119,13 @@ function SetupPage({ settings, questions, playerProfile, onUpdateSetting, onStar
           transition={{ duration: 0.3, delay: 0.3 }}
         >
           <Badge tone="warning">Preview</Badge>
-          <h2>{selectedTrack.role}</h2>
+          <h2>{settings.level} {selectedTrack.role}</h2>
           <p>Three curated real-world interview questions.</p>
           <motion.ol
             variants={listVariants}
             initial="hidden"
             animate="show"
-            key={settings.track + settings.mode}
+            key={settings.track + settings.mode + settings.level}
           >
             {questions.map((question) => (
               <motion.li variants={itemVariants} key={question.id}>
