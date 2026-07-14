@@ -776,6 +776,166 @@ export const questionBank = [
     model:
       "A strong answer explains how you identified the essential outcome, reduced scope responsibly, communicated tradeoffs, and still delivered useful work.",
   },
+  {
+    id: "fe-debug-production",
+    track: "frontend",
+    level: "Middle",
+    topic: "Debugging",
+    title: "Investigating a production-only issue",
+    prompt:
+      "Users report that checkout occasionally freezes, but you cannot reproduce it locally. How would you investigate and reduce the impact?",
+    answerPlan: [
+      "Start with user impact, error monitoring, and reproducible context.",
+      "Compare production conditions such as browser, network, feature flags, and API responses.",
+      "Ship a safe mitigation, then verify the fix with monitoring.",
+    ],
+    model:
+      "I would first identify the affected users and collect errors, session context, and network traces. I would look for differences between local and production conditions, add targeted instrumentation if needed, and ship the smallest safe mitigation while I verify the root cause.",
+  },
+  {
+    id: "fe-data-contract",
+    track: "frontend",
+    level: "Junior",
+    topic: "API integration",
+    title: "Handling an unexpected API change",
+    prompt:
+      "An API field your page depends on is renamed shortly before release. What would you do?",
+    answerPlan: [
+      "Confirm the contract change and its user impact.",
+      "Coordinate a compatible fix with the API owner.",
+      "Add validation or tests that make future contract breaks visible.",
+    ],
+    model:
+      "I would confirm the new contract with the API owner, update the client safely, and test the affected states. If both versions must coexist, I would use a temporary compatibility layer and agree on a removal date. I would also add a contract or integration test.",
+  },
+  {
+    id: "be-transaction-boundary",
+    track: "backend",
+    level: "Middle",
+    topic: "Databases",
+    title: "Preventing inconsistent bookings",
+    prompt:
+      "Two customers attempt to reserve the last available seat at the same time. How would your service prevent both reservations from succeeding?",
+    answerPlan: [
+      "Identify the race condition around the availability check.",
+      "Use a database transaction with an appropriate constraint or lock.",
+      "Return a clear conflict response and keep the operation observable.",
+    ],
+    model:
+      "The availability check and reservation write must be one atomic operation. I would enforce the invariant in the database with a transaction and constraint or row-level lock, then return a conflict response to the request that loses the race. The UI can prompt that customer to choose another seat.",
+  },
+  {
+    id: "be-api-versioning",
+    track: "backend",
+    level: "Junior",
+    topic: "API design",
+    title: "Evolving a public API",
+    prompt:
+      "A mobile app already uses your endpoint, but the response needs a breaking change. How would you roll it out?",
+    answerPlan: [
+      "Avoid silently breaking existing clients.",
+      "Introduce a versioned or additive contract with a migration plan.",
+      "Measure adoption and communicate a deprecation date.",
+    ],
+    model:
+      "I would keep the current contract working and introduce an additive field or a new version when necessary. I would document the migration, coordinate with the mobile team, monitor adoption, and retire the old version only after a communicated deprecation period.",
+  },
+  {
+    id: "ux-conflicting-feedback",
+    track: "ux",
+    level: "Middle",
+    topic: "Research",
+    title: "Reconciling conflicting user feedback",
+    prompt:
+      "Five users ask for a shortcut while five others find the same flow confusing. How would you decide what to change?",
+    answerPlan: [
+      "Look beyond the vote count to user segments, tasks, and evidence.",
+      "Form a hypothesis about the source of the confusion.",
+      "Prototype and test a focused solution before broad rollout.",
+    ],
+    model:
+      "I would examine who encountered each issue, what they were trying to accomplish, and whether behavior data supports it. Rather than averaging opinions, I would form a clear hypothesis, prototype the smallest change, and test it with representative users before committing.",
+  },
+  {
+    id: "ux-accessible-tradeoff",
+    track: "ux",
+    level: "Junior",
+    topic: "Accessibility",
+    title: "Designing an inclusive error flow",
+    prompt:
+      "How would you design a form error state so that it works for keyboard and screen-reader users as well as visual users?",
+    answerPlan: [
+      "Make the error specific and associated with the affected field.",
+      "Do not depend on color alone.",
+      "Move focus or announce the error in a predictable way.",
+    ],
+    model:
+      "I would use clear text next to the relevant field, a visual indicator that is not color-only, and semantic error messaging that assistive technology can announce. On submit, I would guide focus to the error summary or first invalid field without taking away the user's context.",
+  },
+  {
+    id: "qa-risk-based-release",
+    track: "qa",
+    level: "Middle",
+    topic: "Risk",
+    title: "Making a release decision with limited time",
+    prompt:
+      "A release is due today and only two hours remain for testing. How would you decide what to test and what to report?",
+    answerPlan: [
+      "Rank changes by user impact, likelihood of failure, and reversibility.",
+      "Test critical paths and changed integrations first.",
+      "Clearly communicate coverage, remaining risk, and a rollback plan.",
+    ],
+    model:
+      "I would create a risk-based test charter around the changed code and the core user journeys, especially payment, authentication, and data loss risks. I would report exactly what was tested, what was not, known issues, and whether rollback or feature flags are available so the release decision is informed.",
+  },
+  {
+    id: "qa-reproducible-defect",
+    track: "qa",
+    level: "Trainee",
+    topic: "Bug reports",
+    title: "Turning a vague report into a useful defect",
+    prompt:
+      "A colleague says, 'the dashboard is broken sometimes.' What would you ask and record before filing the issue?",
+    answerPlan: [
+      "Clarify the user action, expected result, and actual result.",
+      "Capture environment, account state, time, and frequency.",
+      "Attach concise evidence and state the observed impact.",
+    ],
+    model:
+      "I would ask for the exact steps, expected and actual behavior, when it happened, and whether it is repeatable. I would record browser and device details, relevant account or data state, screenshots or logs, and the impact. That gives a developer a focused place to start.",
+  },
+  {
+    id: "soft-ownership",
+    track: "soft",
+    level: "Middle",
+    topic: "Behavioral",
+    title: "Taking ownership after a mistake",
+    prompt:
+      "Tell me about a mistake you made that affected others. How did you handle it?",
+    answerPlan: [
+      "Set the context and own your part without making excuses.",
+      "Explain how you contained the impact and communicated early.",
+      "End with a specific prevention habit you adopted.",
+    ],
+    model:
+      "A strong answer owns the mistake, explains the immediate recovery and communication, and shows what changed afterward. The goal is not to claim perfection; it is to demonstrate accountability, calm problem-solving, and learning.",
+  },
+  {
+    id: "soft-ambiguity",
+    track: "soft",
+    level: "Junior",
+    topic: "Behavioral",
+    title: "Working with an ambiguous request",
+    prompt:
+      "Tell me about a time you were given an unclear task. How did you move it forward?",
+    answerPlan: [
+      "Explain how you identified the decision that was unclear.",
+      "Describe the questions, assumptions, or small experiment you used.",
+      "Share the outcome and what you communicated to stakeholders.",
+    ],
+    model:
+      "I would describe how I turned the vague request into a concrete goal by asking targeted questions, documenting assumptions, and proposing a small next step. A strong outcome shows progress without pretending that ambiguity disappeared on its own.",
+  },
 ];
 
 export function getWeeklyTarget(targetId) {

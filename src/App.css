@@ -1,11 +1,11 @@
 :root {
   --bg: #07090e;
-  --panel: rgba(18, 22, 38, 0.65);
-  --panel-strong: rgba(28, 34, 58, 0.85);
-  --text: #f3f4f6;
-  --muted: #9ca3af;
-  --line: rgba(255, 255, 255, 0.08);
-  --line-strong: rgba(255, 255, 255, 0.16);
+  --panel: rgba(18, 22, 38, 0.88);
+  --panel-strong: rgba(28, 34, 58, 0.96);
+  --text: #f8fafc;
+  --muted: #b6c0d0;
+  --line: rgba(203, 213, 225, 0.14);
+  --line-strong: rgba(226, 232, 240, 0.26);
   --primary: #6366f1;
   --primary-hover: #4f46e5;
   --primary-glow: rgba(99, 102, 241, 0.25);
@@ -20,6 +20,16 @@
   --danger-bg: rgba(239, 68, 68, 0.12);
   --shadow: 0 12px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   --radius: 12px;
+}
+
+::placeholder {
+  color: #aeb9ca;
+  opacity: 1;
+}
+
+:focus-visible {
+  outline: 3px solid #a5b4fc;
+  outline-offset: 3px;
 }
 
 .app-shell {
@@ -245,4 +255,3 @@
     padding-top: 18px;
   }
 }
-
