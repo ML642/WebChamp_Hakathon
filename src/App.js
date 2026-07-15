@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { CircleUserRound } from "lucide-react";
 import "./App.css";
+import VantaFogBackground from "./components/VantaFogBackground";
 import {
   awardSessionXp,
   buildQuestions,
@@ -516,6 +517,7 @@ function App() {
 
   return (
     <div className="app-shell">
+      <VantaFogBackground />
       <header className="topbar">
         <button className="brand-button" type="button" onClick={() => setPage("landing")}>
           <span className="brand-mark" aria-hidden="true">

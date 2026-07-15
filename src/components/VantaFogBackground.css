@@ -1,0 +1,15 @@
+.vanta-fog {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% -15%, rgba(72, 67, 160, .16), transparent 55%), #07090e;
+  opacity: .72;
+  pointer-events: none;
+}
+
+.vanta-fog canvas { display: block; }
+
+@media (max-width: 860px), (prefers-reduced-motion: reduce) {
+  .vanta-fog { opacity: .36; }
+}

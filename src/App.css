@@ -33,9 +33,15 @@
 }
 
 .app-shell {
+  position: relative;
   min-height: 100vh;
   color: var(--text);
-  background-color: var(--bg);
+  isolation: isolate;
+}
+
+.app-shell > main {
+  position: relative;
+  z-index: 1;
 }
 
 .topbar {
