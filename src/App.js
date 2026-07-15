@@ -20,6 +20,7 @@ import InterviewRoom from "./pages/InterviewRoom/InterviewRoom";
 import ResultsDashboard from "./pages/ResultsDashboard/ResultsDashboard";
 import MentorView from "./pages/MentorView/MentorView";
 import HistoryPage from "./pages/HistoryPage/HistoryPage";
+import AboutPage from "./pages/AboutPage/AboutPage";
 
 const initialSettings = {
   track: "frontend",
@@ -30,6 +31,8 @@ const initialSettings = {
 const publicNavItems = [
   { id: "landing", label: "Home" },
   { id: "questionBase", label: "Questions" },
+  { id: "about", label: "Why Answerly" },
+  { id: "publicDemo", label: "Live Demo" },
 ];
 
 const authNavItems = [
@@ -308,6 +311,46 @@ function App() {
     setPage("results");
   }
 
+  function openPublicDemo() {
+    const demoSettings = { track: "frontend", level: "Junior", mode: "quick" };
+    setSession(createSession(demoSettings));
+    setActiveQuestionIndex(0);
+    setPage("publicDemo");
+  }
+
+  function savePublicDemoAnswer(questionId, draft, audioBlob, stats = {}) {
+    if (!session) return;
+
+    setSession((current) => ({
+      ...current,
+      answers: [
+        ...current.answers.filter((answer) => answer.questionId !== questionId),
+        {
+          id: `public-demo-${Date.now()}`,
+          questionId,
+          transcript: draft,
+          isComplete: true,
+          timeSpent: 120,
+          duration: stats.duration || 0,
+          wpm: stats.wpm || 0,
+          videoUrl: audioBlob ? URL.createObjectURL(audioBlob) : null,
+          videoLabel: audioBlob ? "Demo recording" : "No video recorded",
+          checklist: { understood: false, structured: false, timing: false },
+        },
+      ],
+    }));
+  }
+
+  function goToNextPublicDemoQuestion() {
+    if (!session || activeQuestionIndex >= session.questions.length - 1) {
+      setSession(null);
+      setPage("landing");
+      return;
+    }
+
+    setActiveQuestionIndex((index) => index + 1);
+  }
+
   function logoutPlayer() {
     localStorage.removeItem("auth_token");
     setPlayerProfile(null);
@@ -452,6 +495,11 @@ function App() {
   }
 
   function goToPage(nextPage) {
+    if (nextPage === "publicDemo") {
+      openPublicDemo();
+      return;
+    }
+
     const authPages = ["setup", "interview", "results", "history", "mentor"];
     if (authPages.includes(nextPage) && !playerProfile) {
       setPage("login");
@@ -542,7 +590,6 @@ function App() {
           <LandingPage
             onStart={() => setPage("register")}
             onOpenQuestionBase={() => setPage("questionBase")}
-            onLoadDemo={loadDemoSession}
           />
         )}
 
@@ -615,6 +662,25 @@ function App() {
             onOpenSession={openHistorySession}
             onPracticeAgain={practiceFromHistory}
             onStartPractice={() => setPage("setup")}
+          />
+        )}
+
+        {page === "publicDemo" && (
+          <InterviewRoom
+            session={session}
+            activeQuestionIndex={activeQuestionIndex}
+            onSaveAnswer={savePublicDemoAnswer}
+            onNext={goToNextPublicDemoQuestion}
+            onBackToSetup={() => { setSession(null); setPage("landing"); }}
+            onFinish={() => { setSession(null); setPage("landing"); }}
+          />
+        )}
+
+        {page === "about" && (
+          <AboutPage
+            playerName={playerProfile?.name}
+            isSignedIn={Boolean(playerProfile)}
+            onStartPractice={() => setPage(playerProfile ? "setup" : "register")}
           />
         )}
 

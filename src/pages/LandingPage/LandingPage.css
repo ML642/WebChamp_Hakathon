@@ -77,8 +77,9 @@
   perspective: 1000px;
 }
 
-.hero-product.panel {
+.hero-product {
   border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
   background: rgba(18, 22, 38, 0.45);
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   padding: 16px;
@@ -405,4 +406,3 @@
     grid-template-columns: 1fr;
   }
 }
-

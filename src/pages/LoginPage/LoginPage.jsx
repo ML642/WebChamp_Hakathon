@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Badge, Button, Card3D } from "../../components/Ui";
+import { ArrowRight, LockKeyhole, Mail } from "lucide-react";
+import { Badge, Button } from "../../components/Ui";
 import "./LoginPage.css";
 
 const initialForm = {
@@ -41,8 +42,13 @@ function LoginPage({ onLogin, onLoadDemo, onOpenRegister }) {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <form onSubmit={submitLogin} style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-        <div className="panel login-card" style={{ cursor: "default" }}>
+      <form className="login-form" onSubmit={submitLogin} autoComplete="off">
+        <motion.div
+          className="panel login-card"
+          initial={{ opacity: 0, y: 24, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+        >
           <div className="login-brand-row">
             <span className="login-brand-mark" aria-hidden="true">
               A
@@ -50,48 +56,57 @@ function LoginPage({ onLogin, onLoadDemo, onOpenRegister }) {
             <span>Answerly</span>
           </div>
 
-          <div className="login-heading" style={{ marginTop: "12px" }}>
+          <div className="login-heading">
             <Badge tone="success">Welcome back</Badge>
             <h1>Log in to your account</h1>
             <p>Continue to your interview practice workspace.</p>
           </div>
 
           {error && (
-            <div className="login-error" style={{ color: "#ef4444", backgroundColor: "rgba(239, 68, 68, 0.1)", padding: "12px", borderRadius: "8px", border: "1px solid rgba(239, 68, 68, 0.2)", fontSize: "0.875rem", textAlign: "center" }}>
+            <div className="login-error">
               {error}
             </div>
           )}
 
           <div className="login-fields">
-            <label>
+            <label htmlFor="login-email">
               <span>Email</span>
-              <input
+              <div className="login-input-wrap">
+                <Mail size={18} aria-hidden="true" />
+                <input
+                  id="login-email"
                 required
                 type="email"
-                autoComplete="email"
+                maxLength={20}
+                autoComplete="off"
                 value={form.email}
                 onChange={(event) => updateForm("email", event.target.value)}
                 placeholder="candidate@answerly.demo"
-              />
+                />
+              </div>
             </label>
 
-            <label>
+            <label htmlFor="login-password">
               <span>Password</span>
-              <input
+              <div className="login-input-wrap">
+                <LockKeyhole size={18} aria-hidden="true" />
+                <input
+                  id="login-password"
                 required
                 minLength={6}
                 type="password"
-                autoComplete="current-password"
+                autoComplete="off"
                 value={form.password}
                 onChange={(event) => updateForm("password", event.target.value)}
                 placeholder="Enter your password"
-              />
+                />
+              </div>
             </label>
           </div>
 
           <div className="login-actions">
             <Button type="submit" className="login-submit">
-              Log in
+              Log in <ArrowRight size={17} />
             </Button>
             <Button variant="secondary" className="login-submit" onClick={onLoadDemo}>
               Load demo player
@@ -106,7 +121,7 @@ function LoginPage({ onLogin, onLoadDemo, onOpenRegister }) {
               </button>
             </p>
           </div>
-        </div>
+        </motion.div>
       </form>
     </motion.section>
   );

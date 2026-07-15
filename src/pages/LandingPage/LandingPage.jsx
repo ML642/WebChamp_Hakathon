@@ -19,7 +19,7 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 260, damping: 20 } },
 };
 
-function LandingPage({ onStart, onOpenQuestionBase, onLoadDemo }) {
+function LandingPage({ onStart, onOpenQuestionBase }) {
   const [activeTrack, setActiveTrack] = useState("all");
   const visibleQuestions = useMemo(() => {
     const filtered =
@@ -55,8 +55,8 @@ function LandingPage({ onStart, onOpenQuestionBase, onLoadDemo }) {
           </p>
           <div className="action-row">
             <Button onClick={onStart}>Build practice session</Button>
-            <Button variant="secondary" onClick={onLoadDemo}>
-              Load polished demo
+            <Button variant="secondary" onClick={onOpenQuestionBase}>
+              Explore questions
             </Button>
           </div>
         </motion.div>
@@ -67,7 +67,7 @@ function LandingPage({ onStart, onOpenQuestionBase, onLoadDemo }) {
           animate={{ opacity: 1, x: 0 }}
           transition={{ type: "spring", stiffness: 100, damping: 15, delay: 0.1 }}
         >
-          <Card3D className="hero-product">
+          <div className="hero-product">
             <div className="mock-call">
               <div className="mock-call-main">
                 <span className="record-dot" />
@@ -80,7 +80,7 @@ function LandingPage({ onStart, onOpenQuestionBase, onLoadDemo }) {
                 <span className="glow-success">Mentor Link Ready</span>
               </div>
             </div>
-          </Card3D>
+          </div>
         </motion.div>
       </div>
 
@@ -209,4 +209,3 @@ function LandingPage({ onStart, onOpenQuestionBase, onLoadDemo }) {
 }
 
 export default LandingPage;
-

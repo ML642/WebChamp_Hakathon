@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Check, ChevronDown } from "lucide-react";
 import { Badge, Button, Card3D } from "../../components/Ui";
 import { createPlayerProfile, levels, tracks } from "../../data/mockData";
 import "./RegistrationPage.css";
@@ -41,14 +42,63 @@ const stepVariants = {
   }),
 };
 
+function StyledSelect({ id, value, options, isOpen, onToggle, onChange }) {
+  const selected = options.find((option) => option.value === value);
+
+  return (
+    <div className="select-dropdown">
+      <button
+        id={id}
+        className={isOpen ? "custom-select is-open" : "custom-select"}
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        onClick={onToggle}
+      >
+        <span>{selected?.label}</span>
+        <ChevronDown size={18} aria-hidden="true" />
+      </button>
+      <AnimatePresence>
+        {isOpen ? (
+          <motion.div
+            className="custom-select-menu"
+            role="listbox"
+            initial={{ opacity: 0, y: -6, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.98 }}
+            transition={{ duration: 0.16 }}
+          >
+            {options.map((option) => (
+              <button
+                className={option.value === value ? "custom-select-option is-selected" : "custom-select-option"}
+                key={option.value}
+                type="button"
+                role="option"
+                aria-selected={option.value === value}
+                onClick={() => onChange(option.value)}
+              >
+                <span>{option.label}</span>
+                {option.value === value ? <Check size={16} aria-hidden="true" /> : null}
+              </button>
+            ))}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 function RegistrationPage({ onRegister, onLoadDemo, onOpenLogin }) {
   const [form, setForm] = useState(initialForm);
   const [error, setError] = useState("");
   const [stepIndex, setStepIndex] = useState(0);
   const [direction, setDirection] = useState(1);
+  const [openSelect, setOpenSelect] = useState(null);
   const formRef = useRef(null);
   const selectedTrack = tracks.find((track) => track.id === form.track);
   const isProfileStep = stepIndex === 1;
+  const levelOptions = levels.map((level) => ({ value: level, label: level }));
+  const trackOptions = tracks.map((track) => ({ value: track.id, label: track.title }));
 
   function updateForm(key, value) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -165,7 +215,7 @@ function RegistrationPage({ onRegister, onLoadDemo, onOpenLogin }) {
                     <h2>Account details</h2>
                   </div>
 
-                  <div className="form-grid">
+                  <div className="form-grid" style={{paddingLeft:"20px",paddingRight:"20px"}}>
                     <label>
                       <span>Name</span>
                       <input
@@ -182,6 +232,7 @@ function RegistrationPage({ onRegister, onLoadDemo, onOpenLogin }) {
                       <input
                         required
                         type="email"
+                        maxLength={20}
                         autoComplete="email"
                         value={form.email}
                         onChange={(event) => updateForm("email", event.target.value)}
@@ -190,7 +241,7 @@ function RegistrationPage({ onRegister, onLoadDemo, onOpenLogin }) {
                     </label>
                   </div>
 
-                  <label>
+                  <label style={{paddingLeft:"20px",paddingRight:"20px"}}>
                     <span>Password</span>
                     <input
                       required
@@ -219,29 +270,31 @@ function RegistrationPage({ onRegister, onLoadDemo, onOpenLogin }) {
                   </div>
 
                   <div className="form-grid">
-                    <label>
+                    <label htmlFor="registration-level">
                       <span>Level</span>
-                      <select value={form.level} onChange={(event) => updateForm("level", event.target.value)}>
-                        {levels.map((level) => (
-                          <option key={level} value={level}>
-                            {level}
-                          </option>
-                        ))}
-                      </select>
+                      <StyledSelect
+                        id="registration-level"
+                        value={form.level}
+                        options={levelOptions}
+                        isOpen={openSelect === "level"}
+                        onToggle={() => setOpenSelect((current) => current === "level" ? null : "level")}
+                        onChange={(value) => { updateForm("level", value); setOpenSelect(null); }}
+                      />
                     </label>
-                    <label>
+                    <label htmlFor="registration-track">
                       <span>Field</span>
-                      <select value={form.track} onChange={(event) => updateForm("track", event.target.value)}>
-                        {tracks.map((track) => (
-                          <option key={track.id} value={track.id}>
-                            {track.title}
-                          </option>
-                        ))}
-                      </select>
+                      <StyledSelect
+                        id="registration-track"
+                        value={form.track}
+                        options={trackOptions}
+                        isOpen={openSelect === "track"}
+                        onToggle={() => setOpenSelect((current) => current === "track" ? null : "track")}
+                        onChange={(value) => { updateForm("track", value); setOpenSelect(null); }}
+                      />
                     </label>
                   </div>
 
-                  <label>
+                  <label style={{padding:"20px"}}>
                     <span>What are you studying?</span>
                     <textarea
                       value={form.studying}
@@ -283,23 +336,23 @@ function RegistrationPage({ onRegister, onLoadDemo, onOpenLogin }) {
           </p>
 
           <div className="summary-list">
-            <div>
+            <div className="user-set">
               <span>Name</span>
               <strong>{form.name || "Not set"}</strong>
             </div>
-            <div>
+            <div className="user-set">
               <span>Email</span>
               <strong>{form.email || "Not set"}</strong>
             </div>
-            <div>
+            <div className="user-set">
               <span>Level</span>
               <strong>{form.level}</strong>
             </div>
-            <div>
+            <div className="user-set">
               <span>Field</span>
               <strong>{selectedTrack?.title}</strong>
             </div>
-            <div>
+            <div className="user-set">
               <span>Studying</span>
               <strong>{form.studying || "Add your focus"}</strong>
             </div>
