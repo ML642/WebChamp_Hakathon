@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Badge, Button, Card3D } from "../../components/Ui";
+import { Badge, Button } from "../../components/Ui";
 import { tracks } from "../../data/mockData";
 import "./ProfilePage.css";
 
@@ -17,8 +17,7 @@ function ProfilePage({ playerProfile, onBack, onLogout }) {
       transition={{ duration: 0.3 }}
     >
       <div className="profile-layout">
-        <Card3D className="profile-card">
-          <div className="profile-card-inner">
+        <div className="panel profile-card">
             <div className="profile-header">
               <Badge tone="primary">Your Profile</Badge>
               <h1>{playerProfile.name}</h1>
@@ -55,8 +54,7 @@ function ProfilePage({ playerProfile, onBack, onLogout }) {
                 Log out
               </Button>
             </div>
-          </div>
-        </Card3D>
+        </div>
       </div>
     </motion.section>
   );

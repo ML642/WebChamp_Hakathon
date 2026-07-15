@@ -76,7 +76,8 @@ export const interviewApi = {
   getDashboard: (interviewId) => apiClient(`/interview/${interviewId}/dashboard`),
   share: (interviewId) => apiClient(`/interview/${interviewId}/share`, {
     method: "POST"
-  })
+  }),
+  getHistory: () => apiClient("/interview/history")
 };
 
 export const mentorApi = {

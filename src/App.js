@@ -91,18 +91,73 @@ function App() {
       // Local storage can be unavailable in private or restricted environments.
     }
   }, [history]);
+  const syncHistory = async (playerName) => {
+    try {
+      const backendHistory = await interviewApi.getHistory();
+      const mappedHistory = backendHistory.map(interview => ({
+        id: interview.id,
+        settings: { track: interview.answers[0]?.question.specialization || "frontend", mode: interview.mode, level: interview.answers[0]?.question.level || "Junior" },
+        questions: interview.answers.map(ans => ({
+          id: ans.question.id,
+          topic: ans.question.specialization,
+          title: `Question: ${ans.question.level} ${ans.question.mode}`,
+          prompt: ans.question.text,
+          model: ans.question.reference_answer || "No reference answer available.",
+          answerPlan: ["Understand the prompt", "Structure your response", "Provide a concrete example", "Summarize the outcome"],
+          timeLimit: 180
+        })),
+        answers: interview.answers.map(ans => ({
+          id: ans.id,
+          questionId: ans.question.id,
+          transcript: ans.transcript || "",
+          score: null,
+          isComplete: true,
+          timeSpent: 120,
+          duration: 60,
+          wpm: 120,
+          videoUrl: ans.video_s3_key ? null : null, // we don't have presigned URLs yet
+          videoLabel: "Recorded video",
+          checklist: {
+            understood: ans.ai_score_understanding || false,
+            structured: ans.ai_score_structure || false,
+            timing: ans.ai_score_timing || false
+          },
+          aiFeedback: ans.ai_feedback ? {
+            howToImprove: [ans.ai_feedback],
+            whatWentWell: []
+          } : null
+        })),
+        completedAt: interview.created_at,
+        playerName: playerName,
+        mentorToken: interview.share_token,
+        rewarded: true,
+        xp: 360,
+        streak: 4
+      }));
+      
+      setHistory(current => {
+        const merged = [...mappedHistory, ...current];
+        const unique = merged.filter((item, index, self) => self.findIndex(t => t.id === item.id) === index);
+        return unique.sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt)).slice(0, 20);
+      });
+    } catch (e) {
+      console.error("Failed to sync history", e);
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("auth_token");
     if (token) {
       authApi.getMe()
-        .then(userResp => {
-          setPlayerProfile(createPlayerProfile({
+        .then(async userResp => {
+          const profile = createPlayerProfile({
             name: userResp.email.split("@")[0],
             email: userResp.email,
             track: "frontend",
             level: "Junior"
-          }));
+          });
+          setPlayerProfile(profile);
+          await syncHistory(profile.name);
         })
         .catch(() => {
           localStorage.removeItem("auth_token");
@@ -201,12 +256,14 @@ function App() {
       localStorage.setItem("auth_token", resp.access_token);
       
       const userResp = await authApi.getMe();
-      setPlayerProfile(createPlayerProfile({
+      const profile = createPlayerProfile({
         name: userResp.email.split("@")[0],
         email: userResp.email,
         track: settings.track,
         level: settings.level
-      }));
+      });
+      setPlayerProfile(profile);
+      await syncHistory(profile.name);
       setPage("setup");
     } catch (err) {
       throw err;

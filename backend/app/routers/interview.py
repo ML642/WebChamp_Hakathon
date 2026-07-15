@@ -194,3 +194,46 @@ async def share_interview(
 
     token = await generate_share_token(db, interview)
     return ShareTokenResponse(share_token=token)
+
+@router.get("/history", response_model=list[InterviewDashboardResponse])
+async def get_history(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Get all interviews for the current user, including answers."""
+    result = await db.execute(
+        select(Interview)
+        .options(selectinload(Interview.answers).selectinload(Answer.question))
+        .where(Interview.candidate_id == current_user.id)
+        .order_by(Interview.created_at.desc())
+    )
+    interviews = result.scalars().unique().all()
+    
+    responses = []
+    for interview in interviews:
+        answers = []
+        for ans in interview.answers:
+            answers.append(
+                InterviewDashboardAnswer(
+                    id=ans.id,
+                    question=QuestionResponse.model_validate(ans.question),
+                    video_s3_key=ans.video_s3_key,
+                    transcript=ans.transcript,
+                    ai_score_understanding=ans.ai_score_understanding,
+                    ai_score_structure=ans.ai_score_structure,
+                    ai_score_timing=ans.ai_score_timing,
+                    ai_feedback=ans.ai_feedback,
+                    confidence_score=ans.confidence_score,
+                )
+            )
+        responses.append(
+            InterviewDashboardResponse(
+                id=interview.id,
+                mode=interview.mode,
+                status=interview.status,
+                created_at=interview.created_at,
+                share_token=interview.share_token,
+                answers=answers,
+            )
+        )
+    return responses
