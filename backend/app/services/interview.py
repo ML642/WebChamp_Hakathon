@@ -25,17 +25,44 @@ async def get_questions_for_interview(
     """Select random questions matching the interview parameters."""
     count = MODE_QUESTION_COUNT.get(mode, 3)
 
-    # For 'soft' mode, specialization doesn't matter (behavioral questions)
-    query = select(Question).where(
-        Question.level == level,
-        Question.mode == mode,
-    )
-    if mode != "soft":
-        query = query.where(Question.specialization == specialization)
+    if mode == "topic":
+        query = select(Question).where(
+            Question.level == level,
+            Question.specialization == specialization,
+            Question.mode == "topic"
+        ).order_by(func.random()).limit(count)
+        result = await db.execute(query)
+        return list(result.scalars().all())
 
-    query = query.order_by(func.random()).limit(count)
-    result = await db.execute(query)
-    return list(result.scalars().all())
+    elif mode == "soft":
+        query = select(Question).where(
+            Question.level == level,
+            Question.mode == "soft"
+        ).order_by(func.random()).limit(count)
+        result = await db.execute(query)
+        return list(result.scalars().all())
+
+    else:  # "quick" or mixed mode
+        tech_count = max(1, count - 1)
+        soft_count = count - tech_count
+        
+        tech_query = select(Question).where(
+            Question.level == level,
+            Question.specialization == specialization,
+            Question.mode == "topic"
+        ).order_by(func.random()).limit(tech_count)
+        tech_res = await db.execute(tech_query)
+        questions = list(tech_res.scalars().all())
+
+        if soft_count > 0:
+            soft_query = select(Question).where(
+                Question.level == level,
+                Question.mode == "soft"
+            ).order_by(func.random()).limit(soft_count)
+            soft_res = await db.execute(soft_query)
+            questions.extend(soft_res.scalars().all())
+            
+        return questions
 
 
 async def create_interview(
