@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 
 import httpx
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -58,22 +59,21 @@ async def process_answer(
         await db.commit()
 
 
-async def _transcribe_audio(s3_key: str | None) -> str:
-    """Call OpenAI Whisper API to transcribe the audio from the video file."""
-    if not s3_key:
+async def _transcribe_audio(file_path: str | None) -> str:
+    """Call OpenAI Whisper API to transcribe the audio from the local video file."""
+    if not file_path or not os.path.exists(file_path):
         return "[No audio file available]"
 
-    # For hackathon: In production, download the file from S3 first,
-    # then send to Whisper. Here we use a simplified approach.
     async with httpx.AsyncClient(timeout=120.0) as client:
-        response = await client.post(
-            "https://api.openai.com/v1/audio/transcriptions",
-            headers={"Authorization": f"Bearer {settings.openai_api_key}"},
-            data={"model": "whisper-1", "language": "ru"},
-            files={"file": ("audio.webm", b"", "audio/webm")},
-        )
-        response.raise_for_status()
-        return response.json().get("text", "")
+        with open(file_path, "rb") as audio_file:
+            response = await client.post(
+                "https://api.openai.com/v1/audio/transcriptions",
+                headers={"Authorization": f"Bearer {settings.openai_api_key}"},
+                data={"model": "whisper-1", "language": "ru"},
+                files={"file": ("audio.webm", audio_file, "audio/webm")},
+            )
+            response.raise_for_status()
+            return response.json().get("text", "")
 
 
 async def _evaluate_with_llm(

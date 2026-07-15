@@ -23,6 +23,8 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
   const [voiceEnabled, setVoiceEnabled] = useState(Boolean(SpeechRecognition));
   const videoRef = useRef(null);
   const recognitionRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
   const transcriptRef = useRef("");
   const lastSpeechRef = useRef(Date.now());
 
@@ -93,21 +95,42 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, answerLeft]);
 
-  const startRecognition = useCallback(() => {
-    if (!voiceEnabled || !SpeechRecognition) return;
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true; recognition.interimResults = true; recognition.lang = "en-US";
-    recognition.onresult = (event) => {
-      let interim = "";
-      for (let i = event.resultIndex; i < event.results.length; i += 1) {
-        if (event.results[i].isFinal) transcriptRef.current += `${event.results[i][0].transcript} `;
-        else interim += event.results[i][0].transcript;
+  const startRecognition = useCallback(async () => {
+    // Start SpeechRecognition
+    if (voiceEnabled && SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true; recognition.interimResults = true; recognition.lang = "en-US";
+      recognition.onresult = (event) => {
+        let interim = "";
+        for (let i = event.resultIndex; i < event.results.length; i += 1) {
+          if (event.results[i].isFinal) transcriptRef.current += `${event.results[i][0].transcript} `;
+          else interim += event.results[i][0].transcript;
+        }
+        setDraft(`${transcriptRef.current}${interim}`.trim());
+        lastSpeechRef.current = Date.now(); setPauseDetected(false);
+      };
+      recognition.onerror = () => setVoiceEnabled(false);
+      recognition.start(); recognitionRef.current = recognition;
+    }
+
+    // Start Audio Recording
+    try {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+        mediaRecorderRef.current = mediaRecorder;
+        audioChunksRef.current = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+        mediaRecorder.start();
       }
-      setDraft(`${transcriptRef.current}${interim}`.trim());
-      lastSpeechRef.current = Date.now(); setPauseDetected(false);
-    };
-    recognition.onerror = () => setVoiceEnabled(false);
-    recognition.start(); recognitionRef.current = recognition;
+    } catch (err) {
+      console.warn("MediaRecorder setup failed or permissions denied", err);
+    }
   }, [voiceEnabled]);
 
   function startAnswer() {
@@ -121,9 +144,21 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
     const answer = draft.trim();
     if (!answer) { setPauseDetected(true); return; }
     const nextFeedback = evaluateDemoAnswer(question, answer);
-    setFeedback(nextFeedback); setPhase(nextFeedback.isComplete ? "saved" : "followup");
+    setFeedback(nextFeedback);
+    
+    setPhase(nextFeedback.isComplete ? "saved" : "followup");
     speak(nextFeedback.interviewerMessage);
-    if (nextFeedback.isComplete) onSaveAnswer(question.id, answer);
+
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      mediaRecorderRef.current.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        onSaveAnswer(question.id, answer, audioBlob);
+      };
+      mediaRecorderRef.current.stop();
+    } else {
+      // Always save the answer, even if incomplete or audio failed
+      onSaveAnswer(question.id, answer, null);
+    }
   }
 
   function continueAnswer() { setPauseDetected(false); setPhase("recording"); lastSpeechRef.current = Date.now(); startRecognition(); }

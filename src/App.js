@@ -6,15 +6,16 @@ import {
   buildQuestions,
   createDemoAnswers,
   createMockHistorySessions,
-  createMockAnswer,
   createPlayerProfile,
   getPlayerProgress,
 } from "./data/mockData";
+import { authApi, interviewApi } from "./api/client";
 import LandingPage from "./pages/LandingPage/LandingPage";
 import LoginPage from "./pages/LoginPage/LoginPage";
 import RegistrationPage from "./pages/RegistrationPage/RegistrationPage";
 import SetupPage from "./pages/SetupPage/SetupPage";
 import QuestionBasePage from "./pages/QuestionBasePage/QuestionBasePage";
+import ProfilePage from "./pages/ProfilePage/ProfilePage";
 import InterviewRoom from "./pages/InterviewRoom/InterviewRoom";
 import ResultsDashboard from "./pages/ResultsDashboard/ResultsDashboard";
 import MentorView from "./pages/MentorView/MentorView";
@@ -26,10 +27,13 @@ const initialSettings = {
   mode: "quick",
 };
 
-const navItems = [
+const publicNavItems = [
   { id: "landing", label: "Home" },
-  { id: "setup", label: "Practice Setup" },
   { id: "questionBase", label: "Questions" },
+];
+
+const authNavItems = [
+  { id: "setup", label: "Practice Setup" },
   { id: "interview", label: "Mock Room" },
   { id: "results", label: "Insights" },
   { id: "history", label: "History" },
@@ -110,40 +114,78 @@ function App() {
     setSettings((current) => ({ ...current, [key]: value }));
   }
 
-  function startSession(nextSettings = settings) {
-    const nextSession = createSession(nextSettings);
-    setSession(nextSession);
-    setActiveQuestionIndex(0);
-    setPage("interview");
+  async function startSession(nextSettings = settings) {
+    try {
+      const response = await interviewApi.start(
+        nextSettings.track,
+        nextSettings.level,
+        nextSettings.mode
+      );
+      
+      const nextSession = {
+        id: response.id,
+        settings: nextSettings,
+        questions: response.questions,
+        answers: [],
+        mentorComments: {},
+        mentorToken: null,
+        rewarded: false,
+        xp: 360,
+        streak: 4,
+      };
+
+      setSession(nextSession);
+      setActiveQuestionIndex(0);
+      setPage("interview");
+    } catch (err) {
+      alert("Failed to start session: " + err.message);
+    }
   }
 
-  function registerPlayer(profile) {
-    setPlayerProfile(profile);
-    setSettings((current) => ({
-      ...current,
-      track: profile.track,
-      level: profile.level,
-    }));
-    setPage("setup");
+  async function registerPlayer(profile) {
+    try {
+      const password = profile.password || "password123";
+      await authApi.register(profile.email, password);
+      
+      // Register does not return a token, so we need to login
+      const loginResp = await authApi.login(profile.email, password);
+      localStorage.setItem("auth_token", loginResp.access_token);
+      
+      const userResp = await authApi.getMe();
+      setPlayerProfile(createPlayerProfile({
+        name: userResp.email.split("@")[0],
+        email: userResp.email,
+        track: profile.track,
+        level: profile.level
+      }));
+      setSettings((current) => ({
+        ...current,
+        track: profile.track,
+        level: profile.level,
+      }));
+      setPage("setup");
+    } catch (err) {
+      alert("Registration failed: " + err.message);
+    }
   }
 
-  function loginPlayer(credentials) {
-    const emailName = credentials.email.split("@")[0] || "candidate";
-    const profile = createPlayerProfile({
-      name: emailName
-        .split(/[._-]/)
-        .filter(Boolean)
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join(" ") || "Returning Candidate",
-      email: credentials.email,
-      track: settings.track,
-      level: settings.level,
-      goal: "Junior developer role",
-      weeklyTarget: "steady",
-    });
-
-    setPlayerProfile(profile);
-    setPage("setup");
+  async function loginPlayer(credentials) {
+    try {
+      const password = credentials.password || "password123";
+      const resp = await authApi.login(credentials.email, password);
+      localStorage.setItem("auth_token", resp.access_token);
+      
+      const userResp = await authApi.getMe();
+      setPlayerProfile(createPlayerProfile({
+        name: userResp.email.split("@")[0],
+        email: userResp.email,
+        track: settings.track,
+        level: settings.level
+      }));
+      setPage("setup");
+    } catch (err) {
+      alert("Login failed: " + err.message);
+    }
   }
 
   function loadDemoSession() {
@@ -155,8 +197,8 @@ function App() {
       email: "candidate@answerly.demo",
       track: "frontend",
       level: "Junior",
-      goal: "Junior developer role",
-      weeklyTarget: "sprint",
+      goal: "Master React interviews",
+      weeklyTarget: "steady",
     });
 
     setPlayerProfile({
@@ -184,17 +226,29 @@ function App() {
     setPage("results");
   }
 
-  function saveAnswer(questionId, draft) {
-    if (!session) {
-      return;
-    }
+  function logoutPlayer() {
+    localStorage.removeItem("auth_token");
+    setPlayerProfile(null);
+    setSession(null);
+    setPage("landing");
+  }
+
+  async function saveAnswer(questionId, draft, audioBlob) {
+    if (!session) return;
 
     const question = session.questions.find((item) => item.id === questionId);
-    if (!question) {
-      return;
-    }
+    if (!question) return;
 
-    const answer = createMockAnswer(question, draft, activeQuestionIndex);
+    // Save locally to show in UI immediately
+    const answer = {
+      id: `ans-${Date.now()}`,
+      questionId: question.id,
+      transcript: draft,
+      score: null, // Will be updated when AI finishes
+      isComplete: true,
+      timeSpent: 120,
+      checklist: { understood: false, structured: false, timing: false },
+    };
 
     setSession((current) => ({
       ...current,
@@ -203,6 +257,15 @@ function App() {
         answer,
       ],
     }));
+
+    // Send audio to real backend
+    if (audioBlob && session.id) {
+      try {
+        await interviewApi.submitAnswer(session.id, questionId, audioBlob);
+      } catch (err) {
+        console.error("Failed to upload audio:", err);
+      }
+    }
   }
 
   function goToNextQuestion() {
@@ -303,6 +366,12 @@ function App() {
   }
 
   function goToPage(nextPage) {
+    const authPages = ["setup", "interview", "results", "history", "mentor"];
+    if (authPages.includes(nextPage) && !playerProfile) {
+      setPage("login");
+      return;
+    }
+
     if ((nextPage === "interview" || nextPage === "results" || nextPage === "mentor") && !session) {
       setPage("setup");
       return;
@@ -324,7 +393,20 @@ function App() {
         </button>
 
         <nav className="topnav" aria-label="Primary navigation">
-          {navItems.map((item) => (
+          {publicNavItems.map((item) => {
+            if (playerProfile && item.id === "landing") return null;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                className={page === item.id ? "nav-link active" : "nav-link"}
+                onClick={() => goToPage(item.id)}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+          {playerProfile && authNavItems.map((item) => (
             <button
               key={item.id}
               type="button"
@@ -341,7 +423,7 @@ function App() {
             <button
               className="account-button"
               type="button"
-              onClick={() => setPage("setup")}
+              onClick={() => setPage("profile")}
               title={`Signed in as ${playerProfile.name}`}
               aria-label={`Signed in as ${playerProfile.name}`}
             >
@@ -402,6 +484,14 @@ function App() {
             onUpdateSetting={updateSetting}
             onStart={() => startSession(settings)}
             onLoadDemo={loadDemoSession}
+          />
+        )}
+
+        {page === "profile" && (
+          <ProfilePage
+            playerProfile={playerProfile}
+            onBack={() => setPage("setup")}
+            onLogout={logoutPlayer}
           />
         )}
 

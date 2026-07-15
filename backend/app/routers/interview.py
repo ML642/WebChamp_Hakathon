@@ -1,6 +1,9 @@
 import uuid
+import os
+import shutil
+from pathlib import Path
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -19,13 +22,12 @@ from app.schemas.interview import (
     QuestionResponse,
     ShareTokenResponse,
 )
-from app.schemas.answer import PresignedUrlRequest, PresignedUrlResponse, AnswerSubmitResponse
+from app.schemas.answer import AnswerSubmitResponse
 from app.services.interview import (
     get_questions_for_interview,
     create_interview,
     generate_share_token,
 )
-from app.services.s3 import generate_presigned_upload_url
 from app.services.ai_pipeline import process_answer
 
 router = APIRouter(prefix="/api/v1/interview", tags=["interview"])
@@ -70,33 +72,6 @@ async def start_interview(
     )
 
 
-@router.post("/{interview_id}/presigned-url", response_model=PresignedUrlResponse)
-async def get_presigned_url(
-    interview_id: uuid.UUID,
-    data: PresignedUrlRequest,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """Generate a presigned S3 URL for direct video upload from the client."""
-    # Verify interview belongs to current user
-    result = await db.execute(
-        select(Interview).where(
-            Interview.id == interview_id,
-            Interview.candidate_id == current_user.id,
-        )
-    )
-    interview = result.scalar_one_or_none()
-    if interview is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Interview not found")
-
-    upload_url, s3_key = await generate_presigned_upload_url(
-        interview_id=interview_id,
-        question_id=data.question_id,
-    )
-
-    return PresignedUrlResponse(upload_url=upload_url, s3_key=s3_key)
-
-
 @router.post(
     "/{interview_id}/answer/{question_id}/submit",
     response_model=AnswerSubmitResponse,
@@ -105,12 +80,12 @@ async def submit_answer(
     interview_id: uuid.UUID,
     question_id: uuid.UUID,
     background_tasks: BackgroundTasks,
+    video: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     """
-    Confirm video upload completion and trigger async AI processing.
-    The client calls this after successfully uploading the video to S3.
+    Accept video file upload and trigger async AI processing.
     """
     # Find the pre-created answer record
     result = await db.execute(
@@ -126,9 +101,18 @@ async def submit_answer(
     if answer is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Answer not found")
 
-    # Set the S3 key
-    s3_key = f"interviews/{interview_id}/{question_id}.webm"
-    answer.video_s3_key = s3_key
+    # Ensure upload directory exists
+    upload_dir = Path(f"uploads/interviews/{interview_id}")
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    
+    file_path = upload_dir / f"{question_id}.webm"
+    
+    # Save file locally
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(video.file, buffer)
+
+    # Set the local path as the "key"
+    answer.video_s3_key = str(file_path)
     await db.flush()
 
     # Fetch the question for AI evaluation
