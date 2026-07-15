@@ -14,6 +14,7 @@ class User(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
+    username: Mapped[str] = mapped_column(String(50), unique=True, index=True, nullable=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     github_id: Mapped[str | None] = mapped_column(String(100), nullable=True)

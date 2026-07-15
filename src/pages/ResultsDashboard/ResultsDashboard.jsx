@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
+import { Check } from "lucide-react";
 import { Badge, Button, EmptyState, MetricCard } from "../../components/Ui";
 import { achievementCatalog, getLevelLadder, getTrainingQuests } from "../../data/mockData";
+import { usersApi, mentorApi } from "../../api/client";
 import "./ResultsDashboard.css";
 
 const listVariants = {
@@ -52,7 +55,14 @@ function ResultsDashboard({
   onUpdateDifficulty,
   onOpenMentor,
   onPracticeAgain,
+  onGenerateShareToken,
+  onRefreshResults
 }) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [sentRequests, setSentRequests] = useState({});
+
   if (!session) {
     return (
       <EmptyState
@@ -76,9 +86,37 @@ function ResultsDashboard({
   const levelLadder = getLevelLadder(playerProfile?.xp || 0);
 
   async function copyPacket() {
-    const packet = buildReviewPacket(session, mentorLink);
+    if (!session.mentorToken) {
+      await onGenerateShareToken();
+    }
+    // Need a small timeout to let the token update in the component state, but since we're using current link:
+    const link = session.mentorToken ? `http://localhost:3001/review/${session.mentorToken}` : "Generating...";
+    const packet = buildReviewPacket(session, link);
     if (navigator.clipboard) {
       await navigator.clipboard.writeText(packet);
+    }
+  }
+
+  async function handleSearchMentor(e) {
+    e.preventDefault();
+    if (!searchQuery || searchQuery.length < 2) return;
+    setSearching(true);
+    try {
+      const results = await usersApi.search(searchQuery);
+      setSearchResults(results);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  async function handleSendRequest(answerId, mentorId) {
+    try {
+      await mentorApi.createRequest(answerId, mentorId);
+      setSentRequests(prev => ({...prev, [answerId]: true}));
+    } catch (err) {
+      alert("Failed to send request: " + err.message);
     }
   }
 
@@ -306,6 +344,56 @@ function ResultsDashboard({
                       </div>
                     </div>
                   )}
+
+                  {answer && (
+                    <div className="mentor-assignment-panel" style={{ marginTop: "24px", padding: "16px", backgroundColor: "rgba(168, 85, 247, 0.05)", borderRadius: "12px", border: "1px solid rgba(168, 85, 247, 0.2)" }}>
+                      <strong style={{ display: "block", marginBottom: "12px" }}>Ask a friend to review this answer</strong>
+                      {sentRequests[answer.id] ? (
+                        <div style={{ color: "var(--success)", display: "flex", alignItems: "center", gap: "8px" }}>
+                          <Check size={18} /> Request sent successfully!
+                        </div>
+                      ) : (
+                        <div>
+                          <form onSubmit={handleSearchMentor} style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+                            <input 
+                              type="text" 
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
+                              placeholder="Search by nickname..." 
+                              style={{ flex: 1, padding: "8px 12px", borderRadius: "8px", border: "1px solid var(--border)", background: "var(--surface)", color: "white" }}
+                            />
+                            <Button type="submit" variant="secondary" disabled={searching}>Search</Button>
+                          </form>
+                          {searchResults.length > 0 && (
+                            <div className="search-results" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                              {searchResults.map(user => (
+                                <div key={user.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px", background: "rgba(255,255,255,0.05)", borderRadius: "8px" }}>
+                                  <span>{user.username} <small style={{ opacity: 0.6 }}>({user.role})</small></span>
+                                  <Button size="small" onClick={() => handleSendRequest(answer.id, user.id)}>Send</Button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {answer?.mentor_comments?.length > 0 && (
+                    <div className="mentor-feedback-panel" style={{ marginTop: "24px", padding: "16px", backgroundColor: "rgba(34, 197, 94, 0.05)", borderRadius: "12px", border: "1px solid rgba(34, 197, 94, 0.2)" }}>
+                      <strong style={{ display: "block", marginBottom: "12px", color: "#4ade80", fontSize: "1.1rem" }}>Feedback from Mentors</strong>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                        {answer.mentor_comments.map(comment => (
+                          <div key={comment.id} style={{ padding: "12px", backgroundColor: "rgba(255, 255, 255, 0.03)", borderRadius: "8px", border: "1px solid rgba(255, 255, 255, 0.05)" }}>
+                            <p style={{ margin: 0, fontSize: "0.95rem", lineHeight: "1.5", color: "#e5e7eb" }}>{comment.comment_text}</p>
+                            <small style={{ display: "block", marginTop: "8px", color: "var(--muted)", fontSize: "0.8rem" }}>
+                              {new Date(comment.created_at).toLocaleDateString()} at {new Date(comment.created_at).toLocaleTimeString()}
+                            </small>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </motion.article>
             );
@@ -314,21 +402,21 @@ function ResultsDashboard({
 
         <aside className="panel share-panel">
           <Badge tone="warning">Step 4</Badge>
-          <h2>Private mentor review</h2>
+          <h2>Mentor review</h2>
           <p>
-            The MVP uses a mocked private link. No backend, auth, or real video storage is implemented.
+            You can generate a public link to share the entire interview, or use the search blocks above to ask specific friends to review specific answers.
           </p>
-          <input readOnly value={mentorLink} />
+          <input readOnly value={session.mentorToken ? `http://localhost:3001/review/${session.mentorToken}` : "Click to generate link..."} />
           <div className="stacked-actions">
-            <Button onClick={onOpenMentor}>Open mentor review</Button>
+            {!session.mentorToken && <Button onClick={onGenerateShareToken}>Generate Share Link</Button>}
             <Button variant="secondary" onClick={copyPacket}>Copy review packet</Button>
+            <Button variant="ghost" onClick={onRefreshResults}>Refresh AI Feedback</Button>
             <Button variant="ghost" onClick={onPracticeAgain}>Practice again</Button>
           </div>
           <div className="demo-note" style={{ marginTop: "24px" }}>
-            <strong>Demo architecture</strong>
+            <strong>Updates</strong>
             <p>
-              Frontend state holds the session, answers, and mentor comments. Production would replace this with
-              object storage, database rows, and signed links.
+              AI Feedback is fetched automatically. If it's missing, click Refresh AI Feedback.
             </p>
           </div>
         </aside>

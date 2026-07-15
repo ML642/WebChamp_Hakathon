@@ -81,7 +81,7 @@ function LoginPage({ onLogin, onLoadDemo, onOpenRegister }) {
                   id="login-email"
                 required
                 type="email"
-                maxLength={20}
+                maxLength={254}
                 autoComplete="off"
                 value={form.email}
                 onChange={(event) => updateForm("email", event.target.value)}

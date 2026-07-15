@@ -22,6 +22,7 @@ from app.schemas.interview import (
     QuestionResponse,
     ShareTokenResponse,
 )
+from app.schemas.mentor import MentorCommentResponse
 from app.schemas.answer import AnswerSubmitResponse
 from app.services.interview import (
     get_questions_for_interview,
@@ -135,7 +136,10 @@ async def get_dashboard(
     """Get full interview results including transcripts, AI feedback, and scores."""
     result = await db.execute(
         select(Interview)
-        .options(selectinload(Interview.answers).selectinload(Answer.question))
+        .options(
+            selectinload(Interview.answers).selectinload(Answer.question),
+            selectinload(Interview.answers).selectinload(Answer.mentor_comments)
+        )
         .where(
             Interview.id == interview_id,
             Interview.candidate_id == current_user.id,
@@ -158,6 +162,7 @@ async def get_dashboard(
                 ai_score_timing=ans.ai_score_timing,
                 ai_feedback=ans.ai_feedback,
                 confidence_score=ans.confidence_score,
+                mentor_comments=[MentorCommentResponse.model_validate(c) for c in ans.mentor_comments] if getattr(ans, 'mentor_comments', None) else []
             )
         )
 
@@ -203,7 +208,10 @@ async def get_history(
     """Get all interviews for the current user, including answers."""
     result = await db.execute(
         select(Interview)
-        .options(selectinload(Interview.answers).selectinload(Answer.question))
+        .options(
+            selectinload(Interview.answers).selectinload(Answer.question),
+            selectinload(Interview.answers).selectinload(Answer.mentor_comments)
+        )
         .where(Interview.candidate_id == current_user.id)
         .order_by(Interview.created_at.desc())
     )
@@ -224,6 +232,7 @@ async def get_history(
                     ai_score_timing=ans.ai_score_timing,
                     ai_feedback=ans.ai_feedback,
                     confidence_score=ans.confidence_score,
+                    mentor_comments=[MentorCommentResponse.model_validate(c) for c in ans.mentor_comments] if getattr(ans, 'mentor_comments', None) else []
                 )
             )
         responses.append(

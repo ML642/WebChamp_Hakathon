@@ -5,6 +5,7 @@ from pydantic import BaseModel, EmailStr
 
 
 class UserRegister(BaseModel):
+    username: str
     email: EmailStr
     password: str
 
@@ -21,6 +22,7 @@ class TokenResponse(BaseModel):
 
 class UserResponse(BaseModel):
     id: uuid.UUID
+    username: str | None = None
     email: str
     role: str
     created_at: datetime

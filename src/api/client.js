@@ -41,7 +41,13 @@ export async function apiClient(endpoint, { body, formData, method = "GET", ...c
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(data?.detail || "An error occurred");
+    let errorMessage = "An error occurred";
+    if (data?.detail) {
+      errorMessage = Array.isArray(data.detail) ? JSON.stringify(data.detail) : data.detail;
+    } else if (data?.message) {
+      errorMessage = data.message;
+    }
+    throw new Error(errorMessage);
   }
 
   return data;
@@ -52,11 +58,15 @@ export const authApi = {
     method: "POST",
     body: { email, password }
   }),
-  register: (email, password) => apiClient("/auth/register", {
+  register: (username, email, password) => apiClient("/auth/register", {
     method: "POST",
-    body: { email, password }
+    body: { username, email, password }
   }),
   getMe: () => apiClient("/auth/me")
+};
+
+export const usersApi = {
+  search: (query) => apiClient(`/auth/search?q=${encodeURIComponent(query)}`)
 };
 
 export const interviewApi = {
@@ -82,8 +92,17 @@ export const interviewApi = {
 
 export const mentorApi = {
   getShared: (token) => apiClient(`/mentor/share/${token}`),
-  submitComment: (questionId, commentText, token) => apiClient("/mentor/comment", {
+  submitComment: (answerId, commentText, mentorId) => apiClient("/mentor/comment", {
     method: "POST",
-    body: { question_id: questionId, comment_text: commentText, share_token: token }
-  })
+    body: { answer_id: answerId, comment_text: commentText, mentor_id: mentorId }
+  }),
+  createRequest: (answerId, mentorId) => apiClient("/mentor/requests", {
+    method: "POST",
+    body: { answer_id: answerId, mentor_id: mentorId }
+  }),
+  updateRequestStatus: (requestId, status) => apiClient(`/mentor/requests/${requestId}`, {
+    method: "PATCH",
+    body: { status }
+  }),
+  getRequests: () => apiClient("/mentor/requests/incoming")
 };

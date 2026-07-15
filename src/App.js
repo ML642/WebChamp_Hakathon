@@ -21,6 +21,7 @@ import ResultsDashboard from "./pages/ResultsDashboard/ResultsDashboard";
 import MentorView from "./pages/MentorView/MentorView";
 import HistoryPage from "./pages/HistoryPage/HistoryPage";
 import AboutPage from "./pages/AboutPage/AboutPage";
+import MentorRequests from "./pages/MentorRequests/MentorRequests";
 
 const initialSettings = {
   track: "frontend",
@@ -38,6 +39,7 @@ const publicNavItems = [
 const authNavItems = [
   { id: "setup", label: "Practice Setup" },
   { id: "history", label: "History" },
+  { id: "mentorRequests", label: "Review Requests" },
 ];
 
 const historyStorageKey = "answerlyInterviewHistory";
@@ -124,7 +126,7 @@ function App() {
           timeSpent: 120,
           duration: 60,
           wpm: 120,
-          videoUrl: ans.video_s3_key ? null : null, // we don't have presigned URLs yet
+          videoUrl: ans.video_s3_key ? `http://localhost:8000/${ans.video_s3_key}` : null,
           videoLabel: "Recorded video",
           checklist: {
             understood: ans.ai_score_understanding || false,
@@ -132,9 +134,11 @@ function App() {
             timing: ans.ai_score_timing || false
           },
           aiFeedback: ans.ai_feedback ? {
-            howToImprove: [ans.ai_feedback],
-            whatWentWell: []
-          } : null
+            improvement: ans.ai_feedback,
+            inaccuracies: "Checked by AI",
+            topicsToReview: []
+          } : null,
+          mentor_comments: ans.mentor_comments || []
         })),
         completedAt: interview.created_at,
         playerName: playerName,
@@ -235,7 +239,7 @@ function App() {
   async function registerPlayer(profile) {
     try {
       const password = profile.password || "password123";
-      await authApi.register(profile.email, password);
+      await authApi.register(profile.username || profile.name, profile.email, password);
       
       // Register does not return a token, so we need to login
       const loginResp = await authApi.login(profile.email, password);
@@ -404,7 +408,13 @@ function App() {
     // Send audio to real backend
     if (audioBlob && session.id) {
       try {
-        await interviewApi.submitAnswer(session.id, questionId, audioBlob);
+        const resp = await interviewApi.submitAnswer(session.id, questionId, audioBlob);
+        setSession((current) => ({
+          ...current,
+          answers: current.answers.map((item) =>
+            item.questionId === questionId ? { ...item, id: resp.id } : item
+          ),
+        }));
       } catch (err) {
         console.error("Failed to upload audio:", err);
       }
@@ -422,6 +432,58 @@ function App() {
     }
 
     setActiveQuestionIndex((index) => index + 1);
+  }
+
+  async function generateShareToken() {
+    if (!session || !session.id) return;
+    try {
+      const response = await interviewApi.share(session.id);
+      setSession(current => ({
+        ...current,
+        mentorToken: response.share_token
+      }));
+    } catch (err) {
+      console.error("Failed to generate share token", err);
+    }
+  }
+
+  async function fetchDashboard() {
+    if (!session || !session.id) return;
+    try {
+      const dashboard = await interviewApi.getDashboard(session.id);
+      
+      setSession(current => {
+        const nextAnswers = current.answers.map(ans => {
+          const remoteAns = dashboard.answers.find(da => da.question.id === ans.questionId);
+          if (remoteAns) {
+            return {
+              ...ans,
+              id: remoteAns.id,
+              transcript: remoteAns.transcript || ans.transcript,
+              score: remoteAns.confidence_score ? Math.round(remoteAns.confidence_score * 100) : ans.score,
+              videoUrl: remoteAns.video_s3_key ? `http://localhost:8000/${remoteAns.video_s3_key}` : ans.videoUrl,
+              aiFeedback: remoteAns.ai_feedback ? { improvement: remoteAns.ai_feedback, inaccuracies: "Checked by AI", topicsToReview: [] } : ans.aiFeedback,
+              checklist: {
+                ...ans.checklist,
+                understood: remoteAns.ai_score_understanding ?? ans.checklist.understood,
+                structured: remoteAns.ai_score_structure ?? ans.checklist.structured,
+                timing: remoteAns.ai_score_timing ?? ans.checklist.timing
+              },
+              mentor_comments: remoteAns.mentor_comments || ans.mentor_comments || []
+            };
+          }
+          return ans;
+        });
+
+        return {
+          ...current,
+          answers: nextAnswers,
+          mentorToken: dashboard.share_token || current.mentorToken
+        };
+      });
+    } catch (err) {
+      console.error("Failed to fetch dashboard", err);
+    }
   }
 
   function finishSession() {
@@ -442,6 +504,13 @@ function App() {
 
     setSession(storeHistorySession(completedSession));
     setPage("results");
+    
+    // Poll dashboard to get AI feedback
+    if (session.id) {
+      setTimeout(fetchDashboard, 2000); // 2s
+      setTimeout(fetchDashboard, 6000); // 6s
+      setTimeout(fetchDashboard, 15000); // 15s
+    }
   }
 
   function updateChecklist(questionId, key) {
@@ -672,6 +741,8 @@ function App() {
             onUpdateDifficulty={updateDifficulty}
             onOpenMentor={() => setPage("mentor")}
             onPracticeAgain={() => setPage("setup")}
+            onGenerateShareToken={generateShareToken}
+            onRefreshResults={fetchDashboard}
           />
         )}
 
@@ -682,6 +753,10 @@ function App() {
             onPracticeAgain={practiceFromHistory}
             onStartPractice={() => setPage("setup")}
           />
+        )}
+
+        {page === "mentorRequests" && (
+          <MentorRequests />
         )}
 
         {page === "publicDemo" && (

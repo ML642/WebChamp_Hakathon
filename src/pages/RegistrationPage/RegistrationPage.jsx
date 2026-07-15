@@ -7,6 +7,7 @@ import "./RegistrationPage.css";
 
 const initialForm = {
   name: "",
+  username: "",
   email: "",
   password: "",
   level: "Junior",
@@ -110,6 +111,7 @@ function RegistrationPage({ onRegister, onLoadDemo, onOpenLogin }) {
       await onRegister({
         ...createPlayerProfile({
           name: form.name,
+          username: form.username,
           email: form.email,
           track: form.track,
           level: form.level,
@@ -236,11 +238,22 @@ function RegistrationPage({ onRegister, onLoadDemo, onOpenLogin }) {
                       <input
                         required
                         type="email"
-                        maxLength={20}
+                        maxLength={254}
                         autoComplete="email"
                         value={form.email}
                         onChange={(event) => updateForm("email", event.target.value)}
                         placeholder="candidate@answerly.demo"
+                      />
+                    </label>
+
+                    <label style={{gridColumn: "1 / -1"}}>
+                      <span>Username (for mentor search)</span>
+                      <input
+                        required
+                        autoComplete="username"
+                        value={form.username}
+                        onChange={(event) => updateForm("username", event.target.value)}
+                        placeholder="cool_dev_99"
                       />
                     </label>
                   </div>
@@ -343,6 +356,10 @@ function RegistrationPage({ onRegister, onLoadDemo, onOpenLogin }) {
             <div className="user-set">
               <span>Name</span>
               <strong>{form.name || "Not set"}</strong>
+            </div>
+            <div className="user-set">
+              <span>Username</span>
+              <strong>{form.username || "Not set"}</strong>
             </div>
             <div className="user-set">
               <span>Email</span>

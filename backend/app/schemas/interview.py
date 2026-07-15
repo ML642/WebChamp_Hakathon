@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 
 from pydantic import BaseModel
+from app.schemas.mentor import MentorCommentResponse
 
 
 class InterviewStartRequest(BaseModel):
@@ -41,6 +42,7 @@ class InterviewDashboardAnswer(BaseModel):
     ai_score_timing: bool | None = None
     ai_feedback: str | None = None
     confidence_score: float | None = None
+    mentor_comments: list[MentorCommentResponse] = []
 
     model_config = {"from_attributes": True}
 
