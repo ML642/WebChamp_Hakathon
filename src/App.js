@@ -29,6 +29,8 @@ const initialSettings = {
   mode: "quick",
 };
 
+const BACKEND_BASE = (process.env.REACT_APP_API_URL || "http://localhost:8000").replace("/api/v1", "");
+
 const publicNavItems = [
   { id: "landing", label: "Home" },
   { id: "questionBase", label: "Questions" },
@@ -126,7 +128,7 @@ function App() {
           timeSpent: 120,
           duration: 60,
           wpm: 120,
-          videoUrl: ans.video_s3_key ? `http://localhost:8000/${ans.video_s3_key}` : null,
+          videoUrl: ans.video_s3_key ? `${BACKEND_BASE}/${ans.video_s3_key}` : null,
           videoLabel: "Recorded video",
           checklist: {
             understood: ans.ai_score_understanding || false,
@@ -461,7 +463,7 @@ function App() {
               id: remoteAns.id,
               transcript: remoteAns.transcript || ans.transcript,
               score: remoteAns.confidence_score ? Math.round(remoteAns.confidence_score * 100) : ans.score,
-              videoUrl: remoteAns.video_s3_key ? `http://localhost:8000/${remoteAns.video_s3_key}` : ans.videoUrl,
+              videoUrl: remoteAns.video_s3_key ? `${BACKEND_BASE}/${remoteAns.video_s3_key}` : ans.videoUrl,
               aiFeedback: remoteAns.ai_feedback ? { improvement: remoteAns.ai_feedback, inaccuracies: "Checked by AI", topicsToReview: [] } : ans.aiFeedback,
               checklist: {
                 ...ans.checklist,
