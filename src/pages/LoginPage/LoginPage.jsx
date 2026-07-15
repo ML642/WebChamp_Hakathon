@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { ArrowRight, LockKeyhole, Mail } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowRight, CircleAlert, LockKeyhole, Mail, X } from "lucide-react";
 import { Badge, Button } from "../../components/Ui";
 import "./LoginPage.css";
 
@@ -62,11 +62,15 @@ function LoginPage({ onLogin, onLoadDemo, onOpenRegister }) {
             <p>Continue to your interview practice workspace.</p>
           </div>
 
-          {error && (
-            <div className="login-error">
-              {error}
-            </div>
-          )}
+          <AnimatePresence>
+            {error && (
+              <motion.div className="auth-error-popup" role="alert" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+                <CircleAlert size={19} aria-hidden="true" />
+                <div><strong>We couldn’t sign you in</strong><p>{error}</p><button type="button" onClick={onLoadDemo}>Open demo instead</button></div>
+                <button className="auth-popup-close" type="button" onClick={() => setError("")} aria-label="Dismiss error"><X size={17} /></button>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="login-fields">
             <label htmlFor="login-email">

@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, CircleAlert, X } from "lucide-react";
 import { Badge, Button, Card3D } from "../../components/Ui";
 import { createPlayerProfile, levels, tracks } from "../../data/mockData";
 import "./RegistrationPage.css";
@@ -164,11 +164,15 @@ function RegistrationPage({ onRegister, onLoadDemo, onOpenLogin }) {
             <p>Complete two quick steps to personalize your interview practice.</p>
           </div>
 
-          {error && (
-            <div className="login-error" style={{ color: "#ef4444", backgroundColor: "rgba(239, 68, 68, 0.1)", padding: "12px", borderRadius: "8px", border: "1px solid rgba(239, 68, 68, 0.2)", fontSize: "0.875rem", textAlign: "center", marginBottom: "16px" }}>
-              {error}
-            </div>
-          )}
+          <AnimatePresence>
+            {error && (
+              <motion.div className="auth-error-popup" role="alert" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+                <CircleAlert size={19} aria-hidden="true" />
+                <div><strong>Account wasn’t created</strong><p>{error}</p><button type="button" onClick={onLoadDemo}>Open demo instead</button></div>
+                <button className="auth-popup-close" type="button" onClick={() => setError("")} aria-label="Dismiss error"><X size={17} /></button>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="registration-stepper" aria-label="Registration progress">
             {registrationSteps.map((step, index) => (
