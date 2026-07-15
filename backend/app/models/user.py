@@ -1,3 +1,4 @@
+from typing import Optional
 import uuid
 from datetime import datetime, timezone
 
@@ -16,9 +17,9 @@ class User(Base):
     )
     username: Mapped[str] = mapped_column(String(50), unique=True, index=True, nullable=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
-    password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    github_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
-    google_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    password_hash: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    github_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    google_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     role: Mapped[str] = mapped_column(String(20), default="candidate")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)

@@ -1,3 +1,4 @@
+from typing import Optional
 import uuid
 from datetime import datetime, timezone
 
@@ -17,7 +18,7 @@ class MentorComment(Base):
     answer_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("answers.id"), nullable=False
     )
-    mentor_id: Mapped[uuid.UUID | None] = mapped_column(
+    mentor_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=True
     )
     comment_text: Mapped[str] = mapped_column(Text, nullable=False)

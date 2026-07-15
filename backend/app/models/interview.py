@@ -1,3 +1,4 @@
+from typing import Optional
 import uuid
 from datetime import datetime, timezone
 
@@ -22,7 +23,7 @@ class Interview(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
-    share_token: Mapped[uuid.UUID | None] = mapped_column(
+    share_token: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True), unique=True, nullable=True
     )
 
