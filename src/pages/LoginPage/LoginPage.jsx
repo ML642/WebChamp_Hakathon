@@ -10,17 +10,27 @@ const initialForm = {
 
 function LoginPage({ onLogin, onLoadDemo, onOpenRegister }) {
   const [form, setForm] = useState(initialForm);
+  const [error, setError] = useState("");
 
   function updateForm(key, value) {
     setForm((current) => ({ ...current, [key]: value }));
+    if (error) setError(""); // clear error when typing
   }
 
-  function submitLogin(event) {
+  async function submitLogin(event) {
     event.preventDefault();
-    onLogin({
-      email: form.email.trim() || "candidate@answerly.demo",
-      password: form.password,
-    });
+    try {
+      await onLogin({
+        email: form.email.trim() || "candidate@answerly.demo",
+        password: form.password,
+      });
+    } catch (err) {
+      if (err.message.includes("Unauthorized") || err.message.includes("401")) {
+        setError("Incorrect email or password");
+      } else {
+        setError("Login failed: " + err.message);
+      }
+    }
   }
 
   return (
@@ -32,7 +42,7 @@ function LoginPage({ onLogin, onLoadDemo, onOpenRegister }) {
       transition={{ duration: 0.3 }}
     >
       <form onSubmit={submitLogin} style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-        <Card3D className="login-card" style={{ cursor: "default" }}>
+        <div className="panel login-card" style={{ cursor: "default" }}>
           <div className="login-brand-row">
             <span className="login-brand-mark" aria-hidden="true">
               A
@@ -45,6 +55,12 @@ function LoginPage({ onLogin, onLoadDemo, onOpenRegister }) {
             <h1>Log in to your account</h1>
             <p>Continue to your interview practice workspace.</p>
           </div>
+
+          {error && (
+            <div className="login-error" style={{ color: "#ef4444", backgroundColor: "rgba(239, 68, 68, 0.1)", padding: "12px", borderRadius: "8px", border: "1px solid rgba(239, 68, 68, 0.2)", fontSize: "0.875rem", textAlign: "center" }}>
+              {error}
+            </div>
+          )}
 
           <div className="login-fields">
             <label>
@@ -82,17 +98,18 @@ function LoginPage({ onLogin, onLoadDemo, onOpenRegister }) {
             </Button>
           </div>
 
-          <p className="auth-switch login-switch">
-            New to Answerly?
-            <button type="button" onClick={onOpenRegister}>
-              Create an account
-            </button>
-          </p>
-        </Card3D>
+          <div className="login-footer">
+            <p>
+              Don't have an account?{" "}
+              <button type="button" onClick={onOpenRegister}>
+                Create one
+              </button>
+            </p>
+          </div>
+        </div>
       </form>
     </motion.section>
   );
 }
 
 export default LoginPage;
-

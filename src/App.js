@@ -34,10 +34,7 @@ const publicNavItems = [
 
 const authNavItems = [
   { id: "setup", label: "Practice Setup" },
-  { id: "interview", label: "Mock Room" },
-  { id: "results", label: "Insights" },
   { id: "history", label: "History" },
-  { id: "mentor", label: "Mentor Review" },
 ];
 
 const historyStorageKey = "answerlyInterviewHistory";
@@ -95,6 +92,24 @@ function App() {
     }
   }, [history]);
 
+  useEffect(() => {
+    const token = localStorage.getItem("auth_token");
+    if (token) {
+      authApi.getMe()
+        .then(userResp => {
+          setPlayerProfile(createPlayerProfile({
+            name: userResp.email.split("@")[0],
+            email: userResp.email,
+            track: "frontend",
+            level: "Junior"
+          }));
+        })
+        .catch(() => {
+          localStorage.removeItem("auth_token");
+        });
+    }
+  }, []);
+
   function storeHistorySession(nextSession, profile = playerProfile) {
     const archivedSession = {
       ...nextSession,
@@ -114,7 +129,7 @@ function App() {
     setSettings((current) => ({ ...current, [key]: value }));
   }
 
-  async function startSession(nextSettings = settings) {
+    async function startSession(nextSettings = settings) {
     try {
       const response = await interviewApi.start(
         nextSettings.track,
@@ -122,10 +137,20 @@ function App() {
         nextSettings.mode
       );
       
+      const mappedQuestions = response.questions.map((q, idx) => ({
+        id: q.id,
+        topic: q.specialization,
+        title: `Question ${idx + 1}: ${q.level} ${q.mode}`,
+        prompt: q.text,
+        model: q.reference_answer || "No reference answer available.",
+        answerPlan: ["Understand the prompt", "Structure your response", "Provide a concrete example", "Summarize the outcome"],
+        timeLimit: 180,
+      }));
+
       const nextSession = {
         id: response.id,
         settings: nextSettings,
-        questions: response.questions,
+        questions: mappedQuestions,
         answers: [],
         mentorComments: {},
         mentorToken: null,
@@ -165,7 +190,7 @@ function App() {
       }));
       setPage("setup");
     } catch (err) {
-      alert("Registration failed: " + err.message);
+      throw err;
     }
   }
 
@@ -184,7 +209,7 @@ function App() {
       }));
       setPage("setup");
     } catch (err) {
-      alert("Login failed: " + err.message);
+      throw err;
     }
   }
 
@@ -233,7 +258,7 @@ function App() {
     setPage("landing");
   }
 
-  async function saveAnswer(questionId, draft, audioBlob) {
+  async function saveAnswer(questionId, draft, audioBlob, stats = {}) {
     if (!session) return;
 
     const question = session.questions.find((item) => item.id === questionId);
@@ -247,6 +272,10 @@ function App() {
       score: null, // Will be updated when AI finishes
       isComplete: true,
       timeSpent: 120,
+      duration: stats.duration || 0,
+      wpm: stats.wpm || 0,
+      videoUrl: audioBlob ? URL.createObjectURL(audioBlob) : null,
+      videoLabel: audioBlob ? "Recorded video" : "No video recorded",
       checklist: { understood: false, structured: false, timing: false },
     };
 

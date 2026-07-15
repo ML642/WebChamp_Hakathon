@@ -116,8 +116,9 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
     // Start Audio Recording
     try {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+        const options = MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus') ? { mimeType: 'video/webm;codecs=vp8,opus' } : (MediaRecorder.isTypeSupported('video/webm') ? { mimeType: 'video/webm' } : (MediaRecorder.isTypeSupported('video/mp4') ? { mimeType: 'video/mp4' } : {}));
+        const mediaRecorder = new MediaRecorder(stream, options);
         mediaRecorderRef.current = mediaRecorder;
         audioChunksRef.current = [];
 
@@ -149,19 +150,26 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
     setPhase(nextFeedback.isComplete ? "saved" : "followup");
     speak(nextFeedback.interviewerMessage);
 
+    const duration = answerSeconds - answerLeft;
+    const wordsCount = answer.split(/\s+/).filter(w => w.length > 0).length;
+    const wpm = duration > 0 ? Math.round((wordsCount / duration) * 60) : 0;
+
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       mediaRecorderRef.current.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        onSaveAnswer(question.id, answer, audioBlob);
+        const videoBlob = new Blob(audioChunksRef.current, { type: mediaRecorderRef.current.mimeType || 'video/webm' });
+        onSaveAnswer(question.id, answer, videoBlob, { duration, wpm });
       };
       mediaRecorderRef.current.stop();
     } else {
       // Always save the answer, even if incomplete or audio failed
-      onSaveAnswer(question.id, answer, null);
+      onSaveAnswer(question.id, answer, null, { duration, wpm });
     }
   }
 
-  function continueAnswer() { setPauseDetected(false); setPhase("recording"); lastSpeechRef.current = Date.now(); startRecognition(); }
+  function continueAnswer() {
+    setPauseDetected(false);
+    lastSpeechRef.current = Date.now();
+  }
 
   if (!session || !question) return <EmptyState title="No active session" text="Create a practice setup before opening the interview room." actionLabel="Go to practice setup" onAction={onBackToSetup} />;
 

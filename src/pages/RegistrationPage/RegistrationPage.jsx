@@ -43,6 +43,7 @@ const stepVariants = {
 
 function RegistrationPage({ onRegister, onLoadDemo, onOpenLogin }) {
   const [form, setForm] = useState(initialForm);
+  const [error, setError] = useState("");
   const [stepIndex, setStepIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const formRef = useRef(null);
@@ -51,20 +52,26 @@ function RegistrationPage({ onRegister, onLoadDemo, onOpenLogin }) {
 
   function updateForm(key, value) {
     setForm((current) => ({ ...current, [key]: value }));
+    if (error) setError("");
   }
 
-  function createAccount() {
-    onRegister(
-      createPlayerProfile({
-        name: form.name,
-        email: form.email,
-        track: form.track,
-        level: form.level,
-        goal: form.studying.trim() || "Interview preparation",
-        studying: form.studying,
-        weeklyTarget: "steady",
-      })
-    );
+  async function createAccount() {
+    try {
+      await onRegister({
+        ...createPlayerProfile({
+          name: form.name,
+          email: form.email,
+          track: form.track,
+          level: form.level,
+          goal: form.studying.trim() || "Interview preparation",
+          studying: form.studying,
+          weeklyTarget: "steady",
+        }),
+        password: form.password,
+      });
+    } catch (err) {
+      setError("Registration failed: " + err.message);
+    }
   }
 
   function goToNextStep() {
@@ -80,7 +87,7 @@ function RegistrationPage({ onRegister, onLoadDemo, onOpenLogin }) {
     setStepIndex(0);
   }
 
-  function submitRegistration(event) {
+  async function submitRegistration(event) {
     event.preventDefault();
 
     if (!isProfileStep) {
@@ -88,7 +95,7 @@ function RegistrationPage({ onRegister, onLoadDemo, onOpenLogin }) {
       return;
     }
 
-    createAccount();
+    await createAccount();
   }
 
   return (
@@ -106,6 +113,12 @@ function RegistrationPage({ onRegister, onLoadDemo, onOpenLogin }) {
             <h1>Register for Answerly.</h1>
             <p>Complete two quick steps to personalize your interview practice.</p>
           </div>
+
+          {error && (
+            <div className="login-error" style={{ color: "#ef4444", backgroundColor: "rgba(239, 68, 68, 0.1)", padding: "12px", borderRadius: "8px", border: "1px solid rgba(239, 68, 68, 0.2)", fontSize: "0.875rem", textAlign: "center", marginBottom: "16px" }}>
+              {error}
+            </div>
+          )}
 
           <div className="registration-stepper" aria-label="Registration progress">
             {registrationSteps.map((step, index) => (

@@ -16,6 +16,7 @@ class QuestionResponse(BaseModel):
     specialization: str
     level: str
     mode: str
+    reference_answer: str
 
     model_config = {"from_attributes": True}
 

@@ -14,14 +14,18 @@
 
 .profile-card {
   padding: var(--spacing-xl);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xl);
   cursor: default;
   border-radius: var(--radius-xl);
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
   box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.5);
+}
+
+.profile-card-inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+  width: 100%;
 }
 
 .profile-header {

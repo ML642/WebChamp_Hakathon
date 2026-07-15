@@ -208,9 +208,13 @@ function ResultsDashboard({
                 layout
               >
                 <div className="answer-media">
-                  <div className="video-placeholder">
-                    <span>{answer?.videoLabel || "No mock video"}</span>
-                  </div>
+                  {answer?.videoUrl ? (
+                    <video src={answer.videoUrl} controls className="answer-video-player" style={{ width: "100%", height: "180px", borderRadius: "12px", background: "#000", objectFit: "cover", display: "block" }} />
+                  ) : (
+                    <div className="video-placeholder">
+                      <span>{answer?.videoLabel || "No mock video"}</span>
+                    </div>
+                  )}
                   <MetricCard label="Duration" value={answer ? `${answer.duration}s` : "--"} />
                   <MetricCard label="Pace" value={answer ? `${answer.wpm} wpm` : "--"} />
                 </div>
