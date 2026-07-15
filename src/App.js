@@ -6,7 +6,6 @@ import {
   awardSessionXp,
   buildQuestions,
   createDemoAnswers,
-  createMockHistorySessions,
   createPlayerProfile,
   getPlayerProgress,
 } from "./data/mockData";
@@ -43,17 +42,21 @@ const authNavItems = [
 
 const historyStorageKey = "answerlyInterviewHistory";
 
-function readStoredHistory() {
+function getHistoryStorageKey(email) {
+  return `${historyStorageKey}:${String(email || "guest").toLowerCase()}`;
+}
+
+function readStoredHistory(email) {
   if (typeof window === "undefined") {
     return [];
   }
 
   try {
-    const stored = window.localStorage.getItem(historyStorageKey);
+    const stored = window.localStorage.getItem(getHistoryStorageKey(email));
     const parsed = stored ? JSON.parse(stored) : [];
-    return Array.isArray(parsed) && parsed.length ? parsed : createMockHistorySessions();
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
-    return createMockHistorySessions();
+    return [];
   }
 }
 
@@ -79,7 +82,7 @@ function App() {
   const [settings, setSettings] = useState(initialSettings);
   const [session, setSession] = useState(null);
   const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
-  const [history, setHistory] = useState(readStoredHistory);
+  const [history, setHistory] = useState([]);
 
   const previewQuestions = useMemo(() => buildQuestions(settings), [settings]);
   const playerProgress = useMemo(
@@ -89,12 +92,14 @@ function App() {
   const mentorLink = session ? `https://answerly.demo/review/${session.mentorToken}` : "";
 
   useEffect(() => {
+    if (!playerProfile?.email) return;
+
     try {
-      window.localStorage.setItem(historyStorageKey, JSON.stringify(history));
+      window.localStorage.setItem(getHistoryStorageKey(playerProfile.email), JSON.stringify(history));
     } catch {
       // Local storage can be unavailable in private or restricted environments.
     }
-  }, [history]);
+  }, [history, playerProfile?.email]);
   const syncHistory = async (playerName) => {
     try {
       const backendHistory = await interviewApi.getHistory();
@@ -161,6 +166,7 @@ function App() {
             level: "Junior"
           });
           setPlayerProfile(profile);
+          setHistory(readStoredHistory(profile.email));
           await syncHistory(profile.name);
         })
         .catch(() => {
@@ -247,6 +253,7 @@ function App() {
         track: profile.track,
         level: profile.level,
       }));
+      setHistory([]);
       setPage("setup");
     } catch (err) {
       throw err;
@@ -267,6 +274,7 @@ function App() {
         level: settings.level
       });
       setPlayerProfile(profile);
+      setHistory(readStoredHistory(profile.email));
       await syncHistory(profile.name);
       setPage("setup");
     } catch (err) {
@@ -334,6 +342,8 @@ function App() {
           timeSpent: 120,
           duration: stats.duration || 0,
           wpm: stats.wpm || 0,
+          selfCheck: stats.selfCheck || "Neutral",
+          pauseCount: stats.pauseCount || 0,
           videoUrl: audioBlob ? URL.createObjectURL(audioBlob) : null,
           videoLabel: audioBlob ? "Demo recording" : "No video recorded",
           checklist: { understood: false, structured: false, timing: false },
@@ -355,6 +365,7 @@ function App() {
   function logoutPlayer() {
     localStorage.removeItem("auth_token");
     setPlayerProfile(null);
+    setHistory([]);
     setSession(null);
     setPage("landing");
   }
@@ -375,6 +386,8 @@ function App() {
       timeSpent: 120,
       duration: stats.duration || 0,
       wpm: stats.wpm || 0,
+      selfCheck: stats.selfCheck || "Neutral",
+      pauseCount: stats.pauseCount || 0,
       videoUrl: audioBlob ? URL.createObjectURL(audioBlob) : null,
       videoLabel: audioBlob ? "Recorded video" : "No video recorded",
       checklist: { understood: false, structured: false, timing: false },
@@ -497,6 +510,10 @@ function App() {
 
   function goToPage(nextPage) {
     if (nextPage === "publicDemo") {
+      if (playerProfile) {
+        setPage("setup");
+        return;
+      }
       openPublicDemo();
       return;
     }
@@ -530,7 +547,7 @@ function App() {
 
         <nav className="topnav" aria-label="Primary navigation">
           {publicNavItems.map((item) => {
-            if (playerProfile && item.id === "landing") return null;
+            if (playerProfile && (item.id === "landing" || item.id === "publicDemo")) return null;
             return (
               <button
                 key={item.id}

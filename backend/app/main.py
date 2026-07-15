@@ -4,6 +4,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
+from app.database import Base, engine
+import app.models  # noqa: F401 - register every SQLAlchemy model
 from app.routers import auth, interview, mentor
 
 settings = get_settings()
@@ -12,9 +14,11 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan — startup and shutdown events."""
-    # Startup: nothing extra needed for now
+    # Create all model tables locally, including users for registration.
+    async with engine.begin() as connection:
+        await connection.run_sync(Base.metadata.create_all)
     yield
-    # Shutdown: cleanup if needed
+    await engine.dispose()
 
 
 app = FastAPI(

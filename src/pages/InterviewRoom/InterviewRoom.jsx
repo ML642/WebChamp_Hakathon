@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { Camera, MessageCircleHeart, Mic, PauseCircle, TimerReset } from "lucide-react";
 import { Badge, Button, EmptyState, MetricCard } from "../../components/Ui";
 import { evaluateDemoAnswer } from "../../data/dynamicInterview";
 import "./InterviewRoom.css";
@@ -7,6 +8,7 @@ import "./InterviewRoom.css";
 const prepSeconds = 10;
 const answerSeconds = 120;
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const selfCheckOptions = ["Confident", "Neutral", "Nervous"];
 
 function formatTime(value) {
   return `${String(Math.floor(value / 60)).padStart(2, "0")}:${String(value % 60).padStart(2, "0")}`;
@@ -21,6 +23,10 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
   const [pauseDetected, setPauseDetected] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [voiceEnabled, setVoiceEnabled] = useState(Boolean(SpeechRecognition));
+  const [cameraReady, setCameraReady] = useState(false);
+  const [microphoneReady, setMicrophoneReady] = useState(false);
+  const [pauseCount, setPauseCount] = useState(0);
+  const [selfCheck, setSelfCheck] = useState("Neutral");
   const videoRef = useRef(null);
   const recognitionRef = useRef(null);
   const mediaRecorderRef = useRef(null);
@@ -33,6 +39,10 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
   const existingTranscript = existingAnswer?.transcript || "";
   const progressLabel = session ? `Question ${activeQuestionIndex + 1} of ${session.questions.length}` : "No session";
   const isLastQuestion = activeQuestionIndex === session?.questions.length - 1;
+  const spokenSeconds = Math.max(0, answerSeconds - answerLeft);
+  const spokenWords = draft.trim() ? draft.trim().split(/\s+/).length : 0;
+  const liveWpm = spokenSeconds > 4 ? Math.round((spokenWords / spokenSeconds) * 60) : 0;
+  const paceLabel = !liveWpm ? "Waiting for speech" : liveWpm < 105 ? "Measured pace" : liveWpm > 175 ? "Fast pace" : "Steady pace";
 
   const speak = useCallback((text) => {
     if (!window.speechSynthesis || !text) return;
@@ -48,6 +58,8 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
       try {
         stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         if (videoRef.current) videoRef.current.srcObject = stream;
+        setCameraReady(stream.getVideoTracks().length > 0);
+        setMicrophoneReady(stream.getAudioTracks().length > 0);
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         if (!AudioContext) return;
         context = new AudioContext();
@@ -63,7 +75,7 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
           animationId = requestAnimationFrame(tick);
         };
         tick();
-      } catch { /* Camera and microphone remain optional in the demo. */ }
+      } catch { setCameraReady(false); setMicrophoneReady(false); }
     }
     setupMedia();
     return () => { if (animationId) cancelAnimationFrame(animationId); if (context) context.close(); stream?.getTracks().forEach((track) => track.stop()); };
@@ -72,7 +84,7 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
   useEffect(() => {
     setPhase(existingTranscript ? "saved" : "prep");
     setPrepLeft(prepSeconds); setAnswerLeft(answerSeconds); setDraft(existingTranscript);
-    setFeedback(null); setPauseDetected(false); transcriptRef.current = existingTranscript;
+    setFeedback(null); setPauseDetected(false); setPauseCount(0); setSelfCheck("Neutral"); transcriptRef.current = existingTranscript;
     return () => window.speechSynthesis?.cancel();
   }, [activeQuestionIndex, existingTranscript]);
 
@@ -88,7 +100,12 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
     if (answerLeft <= 0) { finishAnswer(); return undefined; }
     const timer = window.setTimeout(() => setAnswerLeft((value) => value - 1), 1000);
     const pauseTimer = window.setInterval(() => {
-      if (Date.now() - lastSpeechRef.current > 1800 && transcriptRef.current.trim().split(/\s+/).length > 5) setPauseDetected(true);
+      if (Date.now() - lastSpeechRef.current > 1800 && transcriptRef.current.trim().split(/\s+/).length > 5) {
+        setPauseDetected((current) => {
+          if (!current) setPauseCount((count) => count + 1);
+          return true;
+        });
+      }
     }, 400);
     return () => { window.clearTimeout(timer); window.clearInterval(pauseTimer); };
   // finishAnswer is intentionally stable enough for this timer cycle.
@@ -157,12 +174,12 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       mediaRecorderRef.current.onstop = () => {
         const videoBlob = new Blob(audioChunksRef.current, { type: mediaRecorderRef.current.mimeType || 'video/webm' });
-        onSaveAnswer(question.id, answer, videoBlob, { duration, wpm });
+        onSaveAnswer(question.id, answer, videoBlob, { duration, wpm, selfCheck, pauseCount });
       };
       mediaRecorderRef.current.stop();
     } else {
       // Always save the answer, even if incomplete or audio failed
-      onSaveAnswer(question.id, answer, null, { duration, wpm });
+      onSaveAnswer(question.id, answer, null, { duration, wpm, selfCheck, pauseCount });
     }
   }
 
@@ -183,12 +200,22 @@ function InterviewRoom({ session, activeQuestionIndex, onSaveAnswer, onNext, onB
         <div className="panel camera-panel">
           <div className={`mock-camera ${phase === "recording" ? "recording" : ""}`}>
             <video ref={videoRef} autoPlay playsInline muted className="camera-video-feed" />
+            <div className="practice-signals" aria-label="Practice signals">
+              <span className={cameraReady ? "signal-ok" : "signal-off"}><Camera size={14} /> {cameraReady ? "Camera ready" : "Camera off"}</span>
+              <span className={microphoneReady ? "signal-ok" : "signal-off"}><Mic size={14} /> {microphoneReady ? "Mic ready" : "Mic off"}</span>
+            </div>
             <div className={phase === "recording" ? "camera-status recording" : "camera-status"}>{phase === "recording" ? "● Listening" : "Camera optional"}</div>
             <div className="soundwave" aria-hidden="true">{[.5,.8,1,.9,.6].map((multiplier, index) => <div key={index} className="soundwave-bar" style={{ height: `${Math.max(6, 6 + audioLevel * multiplier * 24)}px` }} />)}</div>
+          </div>
+          <div className="delivery-panel">
+            <div><TimerReset size={17} /><span>Speaking pace</span><strong>{liveWpm ? `${liveWpm} WPM` : "--"}</strong><small>{paceLabel}</small></div>
+            <div><PauseCircle size={17} /><span>Thoughtful pauses</span><strong>{pauseCount}</strong><small>Never auto-advances</small></div>
+            <div><MessageCircleHeart size={17} /><span>Self check</span><strong>Your view</strong><small>Not camera analysis</small></div>
           </div>
           {pauseDetected && phase === "recording" && <div className="pause-prompt"><strong>Still thinking, or ready for feedback?</strong><span>We detected a pause but will never move on automatically.</span><div className="action-row"><Button variant="secondary" onClick={() => { setPauseDetected(false); lastSpeechRef.current = Date.now(); }}>Keep answering</Button><Button onClick={finishAnswer}>Review answer</Button></div></div>}
           {feedback && <div className="demo-feedback"><Badge tone={feedback.isComplete ? "success" : "warning"}>{feedback.isComplete ? "Ready to move on" : "One follow-up"}</Badge><strong>{feedback.score}/100 local answer score</strong><p>{feedback.interviewerMessage}</p><small>Concept coverage: {feedback.covered}/{feedback.total}</small></div>}
           <label className="answer-editor"><span>Live transcript <small>{voiceEnabled ? "Voice capture on" : "Type your answer — voice capture is unavailable in this browser."}</small></span><textarea value={draft} onChange={(event) => { setDraft(event.target.value); transcriptRef.current = event.target.value; }} placeholder="Speak or type your answer here…" /></label>
+          {(phase === "recording" || phase === "ready") && <div className="self-check"><span>How did this answer feel? <small>Only you choose this — Answerly does not infer emotions.</small></span><div>{selfCheckOptions.map((option) => <button key={option} type="button" className={selfCheck === option ? "active" : ""} onClick={() => setSelfCheck(option)}>{option}</button>)}</div></div>}
           <div className="action-row">
             {phase === "prep" && <Button variant="secondary" onClick={() => { setPhase("ready"); speak(question.prompt); }}>Skip prep</Button>}
             {(phase === "ready" || phase === "prep") && <Button onClick={startAnswer}>Start answering</Button>}

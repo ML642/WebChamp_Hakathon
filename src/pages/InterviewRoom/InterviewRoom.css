@@ -145,6 +145,18 @@
   box-shadow: 0 0 15px rgba(239, 68, 68, 0.15);
 }
 
+.practice-signals { position: absolute; z-index: 2; top: 28px; right: 28px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; }
+.practice-signals span { display: inline-flex; align-items: center; gap: 6px; border: 1px solid rgba(255,255,255,.1); border-radius: 999px; background: rgba(7,9,14,.68); padding: 7px 9px; font-size: 11px; font-weight: 700; }
+.signal-ok { color: #6ee7b7; }.signal-off { color: #aeb9ca; }
+
+.delivery-panel { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.delivery-panel > div { display: grid; gap: 4px; border: 1px solid rgba(255,255,255,.08); border-radius: 12px; background: rgba(255,255,255,.025); padding: 13px; }
+.delivery-panel svg { color: #a5b4fc; }.delivery-panel span { color: #aeb9ca; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .45px; }.delivery-panel strong { color: #fff; font-size: 17px; }.delivery-panel small { color: var(--muted); font-size: 11px; line-height: 1.35; }
+
+.self-check { display: grid; gap: 10px; border: 1px solid rgba(168,85,247,.25); border-radius: 12px; background: rgba(168,85,247,.06); padding: 14px; }
+.self-check > span { color: #fff; font-size: 14px; font-weight: 700; }.self-check small { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; font-weight: 500; }.self-check > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.self-check button { min-height: 32px; border: 1px solid rgba(255,255,255,.12); border-radius: 999px; background: rgba(7,9,14,.35); color: #dbe2f0; cursor: pointer; font: inherit; font-size: 12px; font-weight: 700; padding: 0 13px; }.self-check button:hover, .self-check button.active { border-color: #a78bfa; background: rgba(99,102,241,.25); color: #fff; }
+
 .answer-editor {
   display: grid;
   gap: 8px;
@@ -248,4 +260,7 @@
   .mock-camera {
     min-height: 300px;
   }
+
+  .delivery-panel { grid-template-columns: 1fr; }
+  .practice-signals { top: auto; right: 18px; bottom: 18px; }
 }

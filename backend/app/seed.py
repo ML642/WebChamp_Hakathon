@@ -17,6 +17,7 @@ import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import async_session_factory, engine, Base
+import app.models  # noqa: F401 - register every SQLAlchemy model
 from app.models.question import Question
 
 
