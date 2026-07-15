@@ -151,7 +151,7 @@ function App() {
       setHistory(current => {
         const merged = [...mappedHistory, ...current];
         const unique = merged.filter((item, index, self) => self.findIndex(t => t.id === item.id) === index);
-        return unique.sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt)).slice(0, 20);
+        return unique.sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
       });
     } catch (e) {
       console.error("Failed to sync history", e);
@@ -189,7 +189,7 @@ function App() {
     setHistory((current) => [
       archivedSession,
       ...current.filter((item) => item.id !== archivedSession.id),
-    ].slice(0, 20));
+    ]);
 
     return archivedSession;
   }
