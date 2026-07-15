@@ -26,11 +26,12 @@ function buildReviewPacket(session, mentorLink) {
     return "";
   }
 
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001';
   return [
     "Answerly Review Packet",
     `Role: ${session.settings.track} / ${session.settings.level}`,
     `Answers: ${session.answers.length}/${session.questions.length}`,
-    `Mentor link: ${mentorLink}`,
+    `Mentor link: ${baseUrl}/review/${session.mentorToken || ""}`,
     "",
     ...session.questions.flatMap((question, index) => {
       const answer = session.answers.find((item) => item.questionId === question.id);
@@ -90,7 +91,7 @@ function ResultsDashboard({
       await onGenerateShareToken();
     }
     // Need a small timeout to let the token update in the component state, but since we're using current link:
-    const link = session.mentorToken ? `http://localhost:3001/review/${session.mentorToken}` : "Generating...";
+    const link = session.mentorToken ? `${window.location.origin}/review/${session.mentorToken}` : "Generating...";
     const packet = buildReviewPacket(session, link);
     if (navigator.clipboard) {
       await navigator.clipboard.writeText(packet);
@@ -406,7 +407,7 @@ function ResultsDashboard({
           <p>
             You can generate a public link to share the entire interview, or use the search blocks above to ask specific friends to review specific answers.
           </p>
-          <input readOnly value={session.mentorToken ? `http://localhost:3001/review/${session.mentorToken}` : "Click to generate link..."} />
+          <input readOnly value={session.mentorToken ? `${window.location.origin}/review/${session.mentorToken}` : "Click to generate link..."} />
           <div className="stacked-actions">
             {!session.mentorToken && <Button onClick={onGenerateShareToken}>Generate Share Link</Button>}
             <Button variant="secondary" onClick={copyPacket}>Copy review packet</Button>
